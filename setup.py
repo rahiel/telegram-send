@@ -32,7 +32,7 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)"
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: POSIX",
         "Programming Language :: Python :: 3",
         "Topic :: Communications :: Chat",
