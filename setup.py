@@ -14,7 +14,7 @@ except:
 setup(
     name="telegram-send",
     version=__version__,
-    description="Send messages and files over Telegram.",
+    description="Send messages and files over Telegram from the command-line.",
     long_description=long_description,
     url="https://github.com/rahiel/telegram-send",
     license="GPLv3+",

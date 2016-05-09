@@ -44,3 +44,9 @@ instructions.
 sudo pip3 uninstall telegram-send
 sudo rm /etc/telegram-send.conf
 ```
+
+Or if you installed it for a single user:
+``` shell
+pip3 uninstall telegram-send
+rm ~/.config/telegram-send.conf
+```

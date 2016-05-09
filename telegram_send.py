@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# telegram-send - Send messages and files over Telegram
+# telegram-send - Send messages and files over Telegram from the command-line
 # Copyright (C) 2016  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import configparser
-from os import environ
+from os.path import expanduser
 from random import randint
 import sys
 
@@ -31,14 +31,15 @@ def main():
     parser.add_argument("message", help="message(s) to send", nargs='*')
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
+    parser.add_argument("--config", help="specify configuration file", nargs=1, type=str, dest="conf")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
     if args.configure:
-        return configure()
+        return configure(args.conf)
 
     try:
-        send(args)
+        send(args, args.conf)
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -47,9 +48,11 @@ def main():
         print("Please run: " + markup(cmd, "bold"))
 
 
-def send(args):
+def send(args, conf):
+    if conf is None:
+        conf = get_config_path()
     config = configparser.ConfigParser()
-    if not config.read(get_config_path()) or not config.has_section("telegram"):
+    if not config.read(conf) or not config.has_section("telegram"):
         raise ConfigError("Config not found")
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
@@ -66,8 +69,10 @@ def send(args):
             bot.sendDocument(chat_id=chat_id, document=f)
 
 
-def configure():
+def configure(conf):
     """Guide user to set up the bot."""
+    if conf is None:
+        conf = get_config_path()
     prompt = "❯ "
     contact_url = "https://telegram.me/"
 
@@ -106,13 +111,12 @@ def configure():
             update, update_id = get_user()
         except Exception as e:
             print("Error! {}".format(e))
-            pass
 
     user = update.message.from_user.username or update.message.from_user.first_name
     chat_id = update.message.chat_id
     config = configparser.ConfigParser()
     config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
-    with open(get_config_path(), 'w') as f:
+    with open(conf, 'w') as f:
         config.write(f)
 
     m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
@@ -137,7 +141,7 @@ def get_config_path():
     """
     conf = "telegram-send.conf"
     path = sys.path[0]
-    if path.startswith(environ["HOME"]):
-        return environ["HOME"] + "/.config/" + conf
+    if path.startswith("/home/") or path.startswith("/Users/"):
+        return expanduser("~/.config/" + conf)
     else:
         return "/etc/" + conf
