@@ -22,7 +22,7 @@ import sys
 
 import telegram
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 def main():
@@ -31,6 +31,8 @@ def main():
     parser.add_argument("message", help="message(s) to send", nargs='*')
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
+    parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
+    parser.add_argument("--caption", help="caption for image(s)", nargs='+')
     parser.add_argument("--config", help="specify configuration file", nargs=1, type=str, dest="conf")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
@@ -61,12 +63,19 @@ def send(args, conf):
     token, chat_id = config["token"], int(config["chat_id"])
 
     bot = telegram.Bot(token)
+
     for m in args.message:
         bot.sendMessage(chat_id=chat_id, text=m)
 
     if args.file:
         for f in args.file:
             bot.sendDocument(chat_id=chat_id, document=f)
+
+    if args.image:
+        # make captions equal length when not all images have captions
+        captions = args.caption + [None] * (len(args.caption) - len(args.image))
+        for i, c in zip(args.image, captions):
+            bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
 
 
 def configure(conf):
