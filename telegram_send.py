@@ -22,7 +22,7 @@ import sys
 
 import telegram
 
-__version__ = "0.3"
+__version__ = "0.4"
 
 
 def main():
@@ -30,15 +30,18 @@ def main():
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs='*')
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
+    parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs='+')
-    parser.add_argument("--config", help="specify configuration file", nargs=1, type=str, dest="conf")
+    parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
     if args.configure:
         return configure(args.conf)
+    elif args.configure_channel:
+        return configure(args.conf, channel=True)
 
     try:
         send(args, args.conf)
@@ -60,7 +63,8 @@ def send(args, conf):
     if len(missing_options) > 0:
         raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
     config = config["telegram"]
-    token, chat_id = config["token"], int(config["chat_id"])
+    token = config["token"]
+    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
 
     bot = telegram.Bot(token)
 
@@ -78,7 +82,7 @@ def send(args, conf):
             bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
 
 
-def configure(conf):
+def configure(conf, channel=False):
     """Guide user to set up the bot."""
     if conf is None:
         conf = get_config_path()
@@ -98,40 +102,61 @@ def configure(conf):
 
     print("Connected with {}.\n".format(markup(bot_name, "cyan")))
 
-    password = "".join([str(randint(0, 9)) for _ in range(5)])
-    print("Please add {} on Telegram ({})\nand send it the password: {}\n"
-          .format(markup(bot_name, "cyan"), contact_url + bot_name, markup(password, "bold")))
-
-    update, update_id = None, None
-
-    def get_user():
-        updates = bot.getUpdates(offset=update_id, timeout=10)
-        for update in updates:
-            # print(update.message.text)
-            if update.message.text.strip() == password:
-                return update, None
-        if len(updates) > 0:
-            return None, updates[-1].update_id + 1
+    if channel:
+        print("Enter your channel's public name or link:"
+              .format(markup(bot_name, "cyan")))
+        chat_id = input(markup(prompt, "magenta")).strip()
+        if "telegram.me" in chat_id:
+            chat_id = '@' + chat_id.split('/')[-1]
+        elif chat_id.startswith('@'):
+            pass
         else:
-            return None, None
+            chat_id = '@' + chat_id
 
-    while update is None:
-        try:
-            update, update_id = get_user()
-        except Exception as e:
-            print("Error! {}".format(e))
+        authorized = False
+        while not authorized:
+            try:
+                bot.sendChatAction(chat_id=chat_id, action="typing")
+                authorized = True
+            except telegram.error.Unauthorized:
+                input("Please add {} as administrator to {} and press Enter"
+                      .format(markup(bot_name, "cyan"), markup(chat_id, "cyan")))
+        print(markup("\nCongratulations! telegram-send can now post to {}".format(chat_id), "green"))
+    else:
+        password = "".join([str(randint(0, 9)) for _ in range(5)])
+        print("Please add {} on Telegram ({})\nand send it the password: {}\n"
+              .format(markup(bot_name, "cyan"), contact_url + bot_name, markup(password, "bold")))
 
-    user = update.message.from_user.username or update.message.from_user.first_name
-    chat_id = update.message.chat_id
+        update, update_id = None, None
+
+        def get_user():
+            updates = bot.getUpdates(offset=update_id, timeout=10)
+            for update in updates:
+                # print(update.message.text)
+                if update.message.text.strip() == password:
+                    return update, None
+            if len(updates) > 0:
+                return None, updates[-1].update_id + 1
+            else:
+                return None, None
+
+        while update is None:
+            try:
+                update, update_id = get_user()
+            except Exception as e:
+                print("Error! {}".format(e))
+
+        chat_id = update.message.chat_id
+        user = update.message.from_user.username or update.message.from_user.first_name
+        m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
+        ball = telegram.Emoji.CONFETTI_BALL
+        print(markup("".join(m), "green"))
+        bot.sendMessage(chat_id=chat_id, text=ball + ' ' + m[0] + ball + m[1])
+
     config = configparser.ConfigParser()
     config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     with open(conf, 'w') as f:
         config.write(f)
-
-    m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
-    ball = telegram.Emoji.CONFETTI_BALL
-    print(markup("".join(m), "green"))
-    bot.sendMessage(chat_id=chat_id, text=ball + ' ' + m[0] + ball + m[1])
 
 
 class ConfigError(Exception):
