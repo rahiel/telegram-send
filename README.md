@@ -1,4 +1,4 @@
-<h1>telegram-send</h1>
+# telegram-send
 
 [![License](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://github.com/rahiel/telegram-send/blob/master/LICENSE.txt)
 

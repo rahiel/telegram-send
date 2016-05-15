@@ -6,7 +6,10 @@ from telegram_send import __version__
 
 try:
     import pypandoc
+    import re
     long_description = pypandoc.convert("README.md", "rst")
+    # remove raw html blocks, they're not supported on pypi
+    long_description = re.sub("\s+\.\. raw:: html\s*.+? -->", "", long_description, count=2)
 except:
     long_description = ""
 
