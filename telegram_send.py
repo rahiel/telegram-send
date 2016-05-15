@@ -22,7 +22,7 @@ import sys
 
 import telegram
 
-__version__ = "0.4"
+__version__ = "0.4.1"
 
 
 def main():
@@ -76,10 +76,14 @@ def send(args, conf):
             bot.sendDocument(chat_id=chat_id, document=f)
 
     if args.image:
-        # make captions equal length when not all images have captions
-        captions = args.caption + [None] * (len(args.caption) - len(args.image))
-        for i, c in zip(args.image, captions):
-            bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
+        if args.caption:
+            # make captions equal length when not all images have captions
+            captions = args.caption + [None] * (len(args.image) - len(args.caption))
+            for i, c in zip(args.image, captions):
+                bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
+        else:
+            for i in args.image:
+                bot.sendPhoto(chat_id=chat_id, photo=i)
 
 
 def configure(conf, channel=False):
