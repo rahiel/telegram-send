@@ -22,7 +22,7 @@ import sys
 
 import telegram
 
-__version__ = "0.4.2"
+__version__ = "0.5"
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
         return configure(args.conf, channel=True)
 
     try:
-        send(args, args.conf)
+        send(messages=args.message, conf=args.conf, files=args.file, images=args.image, captions=args.caption)
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -53,9 +53,18 @@ def main():
         print("Please run: " + markup(cmd, "bold"))
 
 
-def send(args, conf):
-    if conf is None:
-        conf = get_config_path()
+def send(messages=None, conf=None, files=None, images=None, captions=None):
+    """Send data over Telegram.
+
+    Optional Args:
+        messages (List[str])
+        conf (str): Path of configuration file to use. Will use the default config if not specified.
+            '~' expands to user's home.
+        files (List[file])
+        images (List[file])
+        captions (List[str])
+    """
+    conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
     if not config.read(conf) or not config.has_section("telegram"):
         raise ConfigError("Config not found")
@@ -68,28 +77,33 @@ def send(args, conf):
 
     bot = telegram.Bot(token)
 
-    for m in args.message:
-        bot.sendMessage(chat_id=chat_id, text=m)
+    if messages:
+        for m in messages:
+            bot.sendMessage(chat_id=chat_id, text=m)
 
-    if args.file:
-        for f in args.file:
+    if files:
+        for f in files:
             bot.sendDocument(chat_id=chat_id, document=f)
 
-    if args.image:
-        if args.caption:
+    if images:
+        if captions:
             # make captions equal length when not all images have captions
-            captions = args.caption + [None] * (len(args.image) - len(args.caption))
-            for i, c in zip(args.image, captions):
+            captions += [None] * (len(images) - len(captions))
+            for i, c in zip(images, captions):
                 bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
         else:
-            for i in args.image:
+            for i in images:
                 bot.sendPhoto(chat_id=chat_id, photo=i)
 
 
 def configure(conf, channel=False):
-    """Guide user to set up the bot."""
-    if conf is None:
-        conf = get_config_path()
+    """Guide user to set up the bot, saves configuration at conf.
+
+    Args:
+        conf (str): Path where to save the configuration file. May contain '~' for user's home.
+        channel (Optional[bool]): Whether to configure a channel or not.
+    """
+    conf = expanduser(conf) if conf else get_config_path()
     prompt = "❯ "
     contact_url = "https://telegram.me/"
 
