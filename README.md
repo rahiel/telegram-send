@@ -14,6 +14,7 @@ called from other programs.
 - [Examples](#examples)
     - [alert on completion of shell commands](#alert-on-completion-of-shell-commands)
     - [periodic messages with cron](#periodic-messages-with-cron)
+    - [supervisor process state notifications](#supervisor-process-state-notifications)
 - [Uninstall](#uninstall)
 
 <!-- markdown-toc end -->
@@ -106,6 +107,17 @@ result.
 [astropod]: https://telegram.me/astropod
 [botfather]: https://telegram.me/botfather
 [apod.py]: https://github.com/rahiel/telegram-send/blob/master/examples/apod.py
+
+## supervisor process state notifications
+
+[Supervisor][] controls and monitors processes. It can start processes at boot,
+restart them if they fail and also report on their status. [Supervisor-alert][]
+is a simple plugin for supervisor that sends messages on process state updates
+to an arbitrary program. Using it with telegram-send (by using the `--telegram`
+option), you can receive notifications whenever one of your processes exits.
+
+[supervisor]: http://supervisord.org
+[supervisor-alert]: https://github.com/rahiel/supervisor-alert
 
 # Uninstall
 
