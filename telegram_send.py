@@ -16,13 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
 import configparser
-from os.path import expanduser
+from os import makedirs, remove
+from os.path import expanduser, join, exists
 from random import randint
 import sys
+from subprocess import check_output, CalledProcessError
 
 import telegram
 
-__version__ = "0.5"
+__version__ = "0.6"
 
 
 def main():
@@ -35,13 +37,19 @@ def main():
     parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs='+')
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
+    parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
+    parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
     if args.configure:
-        return configure(args.conf)
+        return configure(args.conf, fm_integration=True)
     elif args.configure_channel:
         return configure(args.conf, channel=True)
+    elif args.file_manager:
+        return integrate_file_manager()
+    elif args.clean:
+        return clean()
 
     try:
         send(messages=args.message, conf=args.conf, files=args.file, images=args.image, captions=args.caption)
@@ -96,7 +104,7 @@ def send(messages=None, conf=None, files=None, images=None, captions=None):
                 bot.sendPhoto(chat_id=chat_id, photo=i)
 
 
-def configure(conf, channel=False):
+def configure(conf, channel=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at conf.
 
     Args:
@@ -175,6 +183,54 @@ def configure(conf, channel=False):
     config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     with open(conf, 'w') as f:
         config.write(f)
+    if fm_integration:
+        return integrate_file_manager()
+
+
+def integrate_file_manager(clean=False):
+    desktop = (
+        "[{}]\n"
+        "Version=1.0\n"
+        "Type=Application\n"
+        "Encoding=UTF-8\n"
+        "Exec=telegram-send --file %F\n"
+        "Icon=telegram\n"
+        "Name={}\n"
+        "Selection=any\n"
+        "Extensions=nodirs;\n"
+        "Quote=double\n"
+    )
+    desktop_file = "telegram-send"
+    file_managers = [
+        ("thunar", "~/.local/share/Thunar/sendto/", "Desktop Entry", "Telegram", ".desktop"),
+        ("nemo", "~/.local/share/nemo/actions/", "Nemo Action", "Send to Telegram", ".nemo_action")
+    ]
+    for (fm, loc, section, label, ext) in file_managers:
+        filename = expanduser(join(loc, desktop_file + ext))
+        print
+        if not clean:
+            if which(fm):
+                if not exists(loc):  # makedirs has "exist_ok" kw in py 3.2+
+                    makedirs(loc)
+                with open(filename, 'w') as f:
+                    f.write(desktop.format(section, label))
+        else:
+            if exists(filename):
+                remove(filename)
+
+
+def which(p):  # shutil.which in py 3.3+
+    try:
+        return check_output(["which", p]).decode("utf-8").strip().endswith(p)
+    except CalledProcessError:
+        return False
+
+
+def clean():
+    integrate_file_manager(clean=True)
+    conf = get_config_path()
+    if exists(conf):
+        remove(conf)
 
 
 class ConfigError(Exception):
