@@ -50,8 +50,10 @@ pip3 install telegram-send
 
 If installed for a single user you need to add `~/.local/bin` to their path:
 ``` shell
-echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
 ```
+(This will be in effect on the next login, do a `. ~/.profile` for the
+impatient.)
 
 And finally configure it with `telegram-send --configure` if you want to send to
 your account, or with `telegram-send --configure-channel` to send to a channel.
@@ -122,12 +124,12 @@ option), you can receive notifications whenever one of your processes exits.
 # Uninstall
 
 ``` shell
+sudo telegram-send --clean
 sudo pip3 uninstall telegram-send
-sudo rm /etc/telegram-send.conf
 ```
 
 Or if you installed it for a single user:
 ``` shell
+telegram-send --clean
 pip3 uninstall telegram-send
-rm ~/.config/telegram-send.conf
 ```

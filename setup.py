@@ -28,6 +28,7 @@ setup(
 
     author="Rahiel Kasim",
     author_email="rahielkasim@gmail.com",
+    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 4 - Beta",
         # "Development Status :: 5 - Production/Stable",
@@ -37,6 +38,7 @@ setup(
         "Intended Audience :: End Users/Desktop",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: POSIX",
+        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Topic :: Communications :: Chat",
         "Topic :: Utilities"
