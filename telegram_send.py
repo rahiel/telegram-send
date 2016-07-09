@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 from os import makedirs, remove
 from os.path import expanduser, join, exists
 from random import randint
@@ -79,9 +82,8 @@ def send(messages=None, conf=None, files=None, images=None, captions=None):
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
         raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    config = config["telegram"]
-    token = config["token"]
-    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
+    token = config.get("telegram", "token")
+    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
 
     bot = telegram.Bot(token)
 
