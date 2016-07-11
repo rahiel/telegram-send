@@ -36,6 +36,10 @@ To send an image with an optional caption:
 telegram-send --image photo.jpg --caption "The Moon at night"
 ```
 
+Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
+
+![](https://cloud.githubusercontent.com/assets/6839756/16735957/51c41cf4-478b-11e6-874a-282f559fb9d3.png)
+
 # Install
 
 Install telegram-send system-wide with pip:

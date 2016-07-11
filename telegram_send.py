@@ -27,7 +27,7 @@ from subprocess import check_output, CalledProcessError
 
 import telegram
 
-__version__ = "0.6"
+__version__ = "0.7"
 
 
 def main():
@@ -202,20 +202,29 @@ def integrate_file_manager(clean=False):
         "Extensions=nodirs;\n"
         "Quote=double\n"
     )
-    desktop_file = "telegram-send"
+    name = "telegram-send"
+    script = """#!/bin/sh
+echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram-send -f
+"""
     file_managers = [
         ("thunar", "~/.local/share/Thunar/sendto/", "Desktop Entry", "Telegram", ".desktop"),
-        ("nemo", "~/.local/share/nemo/actions/", "Nemo Action", "Send to Telegram", ".nemo_action")
+        ("nemo", "~/.local/share/nemo/actions/", "Nemo Action", "Send to Telegram", ".nemo_action"),
+        ("nautilus", "~/.local/share/nautilus/scripts/", "script", "", ""),
     ]
     for (fm, loc, section, label, ext) in file_managers:
-        filename = expanduser(join(loc, desktop_file + ext))
-        print
+        loc = expanduser(loc)
+        filename = join(loc, name + ext)
         if not clean:
             if which(fm):
                 if not exists(loc):  # makedirs has "exist_ok" kw in py 3.2+
                     makedirs(loc)
                 with open(filename, 'w') as f:
-                    f.write(desktop.format(section, label))
+                    if section == "script":
+                        f.write(script)
+                    else:
+                        f.write(desktop.format(section, label))
+                if section == "script":
+                    check_output(["chmod", "+x", filename])
         else:
             if exists(filename):
                 remove(filename)
