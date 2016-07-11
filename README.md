@@ -84,6 +84,11 @@ alias tg='telegram-send "$([ $? = 0 ] && echo "" || echo "error: ") $(history|ta
 
 And then use it like `sleep 10: tg`.
 
+To automatically receive notifications for long running commands, use [ntfy][]
+with the Telegram backend.
+
+[ntfy]: https://github.com/dschep/ntfy
+
 ## periodic messages with cron
 
 We can combine telegram-send with [cron][] to periodically send messages. Here
