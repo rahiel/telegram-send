@@ -27,7 +27,7 @@ from subprocess import check_output, CalledProcessError
 
 import telegram
 
-__version__ = "0.7"
+__version__ = "0.7.1"
 
 
 def main():
