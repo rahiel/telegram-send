@@ -15,10 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 from os import makedirs, remove
 from os.path import expanduser, join, exists
 from random import randint
@@ -27,7 +23,13 @@ from subprocess import check_output, CalledProcessError
 
 import telegram
 
-__version__ = "0.7.1"
+if sys.version_info >= (3, ):
+    import configparser
+else:             # python 2.7
+    import ConfigParser as configparser
+    input = raw_input
+
+__version__ = "0.7.2"
 
 
 def main():
@@ -182,7 +184,10 @@ def configure(conf, channel=False, fm_integration=False):
         bot.sendMessage(chat_id=chat_id, text=ball + ' ' + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
-    config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
+    config.add_section("telegram")
+    config.set("telegram", "TOKEN", token)
+    config.set("telegram", "chat_id", str(chat_id))
+    # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     with open(conf, 'w') as f:
         config.write(f)
     if fm_integration:
