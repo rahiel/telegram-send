@@ -118,7 +118,7 @@ def configure(conf, channel=False, fm_integration=False):
         channel (Optional[bool]): Whether to configure a channel or not.
     """
     conf = expanduser(conf) if conf else get_config_path()
-    prompt = "❯ "
+    prompt = "> "
     contact_url = "https://telegram.me/"
 
     print("Talk with the {} on Telegram ({}), create a bot and insert the token"
