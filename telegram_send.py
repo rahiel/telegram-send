@@ -15,10 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
-from os import makedirs, remove
+from os import makedirs, remove, environ
 from os.path import expanduser, join, exists
 from random import randint
 import sys
+import time
+import platform
 from subprocess import check_output, CalledProcessError
 
 import telegram
@@ -116,7 +118,7 @@ def configure(conf, channel=False, fm_integration=False):
         channel (Optional[bool]): Whether to configure a channel or not.
     """
     conf = expanduser(conf) if conf else get_config_path()
-    prompt = "❯ "
+    prompt = "> "
     contact_url = "https://telegram.me/"
 
     print("Talk with the {} on Telegram ({}), create a bot and insert the token"
@@ -253,11 +255,27 @@ class ConfigError(Exception):
     pass
 
 
-def markup(text, style):
-    ansi_codes = {"bold": "\033[1m", "red": "\033[31m", "green": "\033[32m",
-                  "cyan": "\033[36m", "magenta": "\033[35m"}
-    return ansi_codes[style] + text + "\033[0m"
+def supports_ansi():
+    handle_results = []
+    for handle in [sys.stdout, sys.stderr]:
+        if (hasattr(handle, "isatty") and handle.isatty()) or \
+            ('TERM' in environ and environ['TERM']=='ANSI'):
+            if platform.system()=='Windows' and not ('TERM' in environ and environ['TERM']=='ANSI'):
+                handle_results.append(False)
+            else:
+                handle_results.append(True)
+        else:
+            handle_results.append(False)
+    return all(handle_results)
 
+
+def markup(text, style):
+    if supports_ansi():
+        ansi_codes = {"bold": "\033[1m", "red": "\033[31m", "green": "\033[32m",
+                      "cyan": "\033[36m", "magenta": "\033[35m"}
+        return ansi_codes[style] + text + "\033[0m"
+    else:
+        return text
 
 def get_config_path():
     """Config file is in /etc/ if the script is installed system-wide,
