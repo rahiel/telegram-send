@@ -21,6 +21,8 @@ from random import randint
 import sys
 from subprocess import check_output, CalledProcessError
 
+from appdirs import AppDirs
+from colorama import init
 import telegram
 
 if sys.version_info >= (3, ):
@@ -29,7 +31,9 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.7.2"
+__version__ = "0.8.0"
+
+init()
 
 
 def main():
@@ -116,7 +120,7 @@ def configure(conf, channel=False, fm_integration=False):
         channel (Optional[bool]): Whether to configure a channel or not.
     """
     conf = expanduser(conf) if conf else get_config_path()
-    prompt = "❯ "
+    prompt = "❯ " if not sys.platform.startswith("win32") else "> "
     contact_url = "https://telegram.me/"
 
     print("Talk with the {} on Telegram ({}), create a bot and insert the token"
@@ -260,12 +264,4 @@ def markup(text, style):
 
 
 def get_config_path():
-    """Config file is in /etc/ if the script is installed system-wide,
-    otherwise in user's home directory.
-    """
-    conf = "telegram-send.conf"
-    path = sys.path[0]
-    if path.startswith("/home/") or path.startswith("/Users/"):
-        return expanduser("~/.config/" + conf)
-    else:
-        return "/etc/" + conf
+    return AppDirs("telegram-send").user_config_dir + ".conf"
