@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.0"
+__version__ = "0.8.1"
 
 init()
 
