@@ -49,7 +49,7 @@ Install telegram-send system-wide with pip:
 sudo pip3 install telegram-send
 ```
 
-Or if you want to install it for a single user:
+Or if you want to install it for a single user (recommended):
 ``` shell
 pip3 install telegram-send
 ```
@@ -101,7 +101,7 @@ your bot's username when adding it. Then run `telegram-send --configure-channel
 --config astropod.conf`. We will use the [apod.py][] script that gets the daily
 picture and calls telegram-send to post it to the channel.
 
-We create a cron job `/etc/cron.d/astropod` with the content:
+We create a cron job `/etc/cron.d/astropod` (as root) with the content:
 
 ``` shell
 SHELL=/bin/sh

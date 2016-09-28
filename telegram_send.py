@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.1"
+__version__ = "0.8.2"
 
 init()
 
@@ -183,7 +183,7 @@ def configure(conf, channel=False, fm_integration=False):
         chat_id = update.message.chat_id
         user = update.message.from_user.username or update.message.from_user.first_name
         m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
-        ball = telegram.Emoji.CONFETTI_BALL
+        ball = "🎊"
         print(markup("".join(m), "green"))
         bot.sendMessage(chat_id=chat_id, text=ball + ' ' + m[0] + ball + m[1])
 
