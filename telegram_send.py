@@ -42,6 +42,7 @@ def main():
     parser.add_argument("message", help="message(s) to send", nargs='*')
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=['text', 'markdown', 'html'], help="How to format message when sending to telegram. Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs='+')
@@ -61,7 +62,7 @@ def main():
         return clean()
 
     try:
-        send(messages=args.message, conf=args.conf, files=args.file, images=args.image, captions=args.caption)
+        send(messages=args.message, conf=args.conf, parse_mode=args.parse_mode, files=args.file, images=args.image, captions=args.caption)
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -70,7 +71,7 @@ def main():
         print("Please run: " + markup(cmd, "bold"))
 
 
-def send(messages=None, conf=None, files=None, images=None, captions=None):
+def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
     """Send data over Telegram.
 
     Optional Args:
@@ -93,9 +94,16 @@ def send(messages=None, conf=None, files=None, images=None, captions=None):
 
     bot = telegram.Bot(token)
 
+    # We let the user specify "text" as a parse mode to be more explicit about
+    # the lack of formatting applied to the message, but "text" isn't a supported
+    # parse_mode in python-telegram-bot. Instead, set the parse_mode to None
+    # in this case.
+    if parse_mode == "text":
+        parse_mode = None
+
     if messages:
         for m in messages:
-            bot.sendMessage(chat_id=chat_id, text=m)
+            bot.sendMessage(chat_id=chat_id, text=m, parse_mode=parse_mode)
 
     if files:
         for f in files:
