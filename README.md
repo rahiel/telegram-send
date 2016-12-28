@@ -33,7 +33,7 @@ To send a message using Markdown or HTML formatting:
 telegram-send --format markdown "Only the *bold* use _italics_"
 telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> supported"
 ```
-(for more information on supported formatting, see the [formatting documentation](https://core.telegram.org/bots/api#formatting-options))
+For more information on supported formatting, see the [formatting documentation](https://core.telegram.org/bots/api#formatting-options).
 
 To send a file:
 ``` shell

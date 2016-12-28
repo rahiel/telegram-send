@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.2"
+__version__ = "0.8.4"
 
 init()
 
@@ -42,7 +42,7 @@ def main():
     parser.add_argument("message", help="message(s) to send", nargs='*')
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
-    parser.add_argument("--format", default="text", dest="parse_mode", choices=['text', 'markdown', 'html'], help="How to format message when sending to telegram. Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=['text', 'markdown', 'html'], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs='+')
@@ -81,6 +81,7 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
         files (List[file])
         images (List[file])
         captions (List[str])
+        parse_mode (str): specifies formatting of messages, an element of {"text", "markdown", "html"}
     """
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
