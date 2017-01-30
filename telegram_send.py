@@ -15,15 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
-from os import makedirs, remove
-from os.path import expanduser, join, exists
-from random import randint
 import sys
-from subprocess import check_output, CalledProcessError
+from os import makedirs, remove
+from os.path import exists, expanduser, join
+from random import randint
+from subprocess import CalledProcessError, check_output
 
-from appdirs import AppDirs
-from colorama import init
+import colorama
 import telegram
+from appdirs import AppDirs
 
 if sys.version_info >= (3, ):
     import configparser
@@ -31,12 +31,11 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.4"
-
-init()
+__version__ = "0.8.5"
 
 
 def main():
+    colorama.init()
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs='*')
@@ -134,7 +133,12 @@ def configure(conf, channel=False, fm_integration=False):
 
     print("Talk with the {} on Telegram ({}), create a bot and insert the token"
           .format(markup("BotFather", "cyan"), contact_url + "BotFather"))
-    token = input(markup(prompt, "magenta")).strip()
+    try:
+        token = input(markup(prompt, "magenta")).strip()
+    except UnicodeEncodeError:
+        # some users can only display ASCII
+        prompt = "> "
+        token = input(markup(prompt, "magenta")).strip()
 
     try:
         bot = telegram.Bot(token)
@@ -175,7 +179,6 @@ def configure(conf, channel=False, fm_integration=False):
         def get_user():
             updates = bot.getUpdates(offset=update_id, timeout=10)
             for update in updates:
-                # print(update.message.text)
                 if update.message.text.strip() == password:
                     return update, None
             if len(updates) > 0:
