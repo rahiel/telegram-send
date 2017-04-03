@@ -35,12 +35,12 @@ telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> sup
 ```
 For more information on supported formatting, see the [formatting documentation](https://core.telegram.org/bots/api#formatting-options).
 
-To send a file:
+To send a file (maximum file size of 50 MB):
 ``` shell
 telegram-send --file document.pdf
 ```
 
-To send an image with an optional caption:
+To send an image with an optional caption (maximum file size of 10 MB):
 ``` shell
 telegram-send --image photo.jpg --caption "The Moon at night"
 ```

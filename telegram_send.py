@@ -38,13 +38,13 @@ def main():
     colorama.init()
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
-    parser.add_argument("message", help="message(s) to send", nargs='*')
+    parser.add_argument("message", help="message(s) to send", nargs="*")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
-    parser.add_argument("--format", default="text", dest="parse_mode", choices=['text', 'markdown', 'html'], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
-    parser.add_argument("-f", "--file", help="send file(s)", nargs='+', type=argparse.FileType("rb"))
-    parser.add_argument("-i", "--image", help="send image(s)", nargs='+', type=argparse.FileType("rb"))
-    parser.add_argument("--caption", help="caption for image(s)", nargs='+')
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
@@ -154,11 +154,11 @@ def configure(conf, channel=False, fm_integration=False):
               .format(markup(bot_name, "cyan")))
         chat_id = input(markup(prompt, "magenta")).strip()
         if "telegram.me" in chat_id:
-            chat_id = '@' + chat_id.split('/')[-1]
-        elif chat_id.startswith('@'):
+            chat_id = "@" + chat_id.split("/")[-1]
+        elif chat_id.startswith("@"):
             pass
         else:
-            chat_id = '@' + chat_id
+            chat_id = "@" + chat_id
 
         authorized = False
         while not authorized:
@@ -197,14 +197,14 @@ def configure(conf, channel=False, fm_integration=False):
         m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
         ball = "🎊"
         print(markup("".join(m), "green"))
-        bot.sendMessage(chat_id=chat_id, text=ball + ' ' + m[0] + ball + m[1])
+        bot.sendMessage(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
     config.add_section("telegram")
     config.set("telegram", "TOKEN", token)
     config.set("telegram", "chat_id", str(chat_id))
     # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
-    with open(conf, 'w') as f:
+    with open(conf, "w") as f:
         config.write(f)
     if fm_integration:
         return integrate_file_manager()
@@ -239,7 +239,7 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
             if which(fm):
                 if not exists(loc):  # makedirs has "exist_ok" kw in py 3.2+
                     makedirs(loc)
-                with open(filename, 'w') as f:
+                with open(filename, "w") as f:
                     if section == "script":
                         f.write(script)
                     else:
