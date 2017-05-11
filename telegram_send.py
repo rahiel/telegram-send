@@ -17,7 +17,7 @@
 import argparse
 import sys
 from os import makedirs, remove
-from os.path import exists, expanduser, join
+from os.path import dirname, exists, expanduser, join
 from random import randint
 from subprocess import CalledProcessError, check_output
 
@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.5"
+__version__ = "0.8.6"
 
 
 def main():
@@ -204,6 +204,7 @@ def configure(conf, channel=False, fm_integration=False):
     config.set("telegram", "TOKEN", token)
     config.set("telegram", "chat_id", str(chat_id))
     # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
+    makedirs_check(dirname(conf))
     with open(conf, "w") as f:
         config.write(f)
     if fm_integration:
@@ -237,8 +238,7 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
         filename = join(loc, name + ext)
         if not clean:
             if which(fm):
-                if not exists(loc):  # makedirs has "exist_ok" kw in py 3.2+
-                    makedirs(loc)
+                makedirs_check(loc)
                 with open(filename, "w") as f:
                     if section == "script":
                         f.write(script)
@@ -277,3 +277,8 @@ def markup(text, style):
 
 def get_config_path():
     return AppDirs("telegram-send").user_config_dir + ".conf"
+
+
+def makedirs_check(path):
+    if not exists(path):  # makedirs has "exist_ok" kw in py 3.2+
+        makedirs(path)
