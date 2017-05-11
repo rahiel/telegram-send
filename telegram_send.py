@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.6"
+__version__ = "0.8.7"
 
 
 def main():
@@ -56,7 +56,10 @@ def main():
     elif args.configure_channel:
         return configure(args.conf, channel=True)
     elif args.file_manager:
-        return integrate_file_manager()
+        if not sys.platform.startswith("win32"):
+            return integrate_file_manager()
+        else:
+            print("File manager integration is unavailable on Windows.")
     elif args.clean:
         return clean()
 
@@ -208,7 +211,8 @@ def configure(conf, channel=False, fm_integration=False):
     with open(conf, "w") as f:
         config.write(f)
     if fm_integration:
-        return integrate_file_manager()
+        if not sys.platform.startswith("win32"):
+            return integrate_file_manager()
 
 
 def integrate_file_manager(clean=False):
