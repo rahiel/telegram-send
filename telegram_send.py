@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016  Rahiel Kasim
+# Copyright (C) 2016-2017  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.7"
+__version__ = "0.8.8"
 
 
 def main():
@@ -106,21 +106,21 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
 
     if messages:
         for m in messages:
-            bot.sendMessage(chat_id=chat_id, text=m, parse_mode=parse_mode)
+            bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
 
     if files:
         for f in files:
-            bot.sendDocument(chat_id=chat_id, document=f)
+            bot.send_document(chat_id=chat_id, document=f)
 
     if images:
         if captions:
             # make captions equal length when not all images have captions
             captions += [None] * (len(images) - len(captions))
             for i, c in zip(images, captions):
-                bot.sendPhoto(chat_id=chat_id, photo=i, caption=c)
+                bot.send_photo(chat_id=chat_id, photo=i, caption=c)
         else:
             for i in images:
-                bot.sendPhoto(chat_id=chat_id, photo=i)
+                bot.send_photo(chat_id=chat_id, photo=i)
 
 
 def configure(conf, channel=False, fm_integration=False):
@@ -145,7 +145,7 @@ def configure(conf, channel=False, fm_integration=False):
 
     try:
         bot = telegram.Bot(token)
-        bot_name = bot.getMe().username
+        bot_name = bot.get_me().username
     except:
         print(markup("Something went wrong, please try again.\n", "red"))
         return configure()
@@ -166,7 +166,7 @@ def configure(conf, channel=False, fm_integration=False):
         authorized = False
         while not authorized:
             try:
-                bot.sendChatAction(chat_id=chat_id, action="typing")
+                bot.send_chat_action(chat_id=chat_id, action="typing")
                 authorized = True
             except telegram.error.Unauthorized:
                 input("Please add {} as administrator to {} and press Enter"
@@ -180,7 +180,7 @@ def configure(conf, channel=False, fm_integration=False):
         update, update_id = None, None
 
         def get_user():
-            updates = bot.getUpdates(offset=update_id, timeout=10)
+            updates = bot.get_updates(offset=update_id, timeout=10)
             for update in updates:
                 if update.message.text.strip() == password:
                     return update, None
@@ -200,7 +200,7 @@ def configure(conf, channel=False, fm_integration=False):
         m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
         ball = "🎊"
         print(markup("".join(m), "green"))
-        bot.sendMessage(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
+        bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
     config.add_section("telegram")

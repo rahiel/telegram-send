@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # See the result of this script in the channel: https://telegram.me/astropod
 import argparse
 import json

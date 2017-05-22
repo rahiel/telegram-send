@@ -89,7 +89,11 @@ Ubuntu's built-in `alert`. Put the following in your `~/.bashrc`:
 alias tg='telegram-send "$([ $? = 0 ] && echo "" || echo "error: ") $(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*tg$//'\'')"'
 ```
 
-And then use it like `sleep 10: tg`.
+And then use it like `sleep 10; tg`. This will send you a message with the
+completed command, in this case `sleep 10`.
+
+What if you started a program and forgot to set the alert? Suspend the program
+with Ctrl+Z and then enter `fg; telegram-send "your message here"`.
 
 To automatically receive notifications for long running commands, use [ntfy][]
 with the Telegram backend.
@@ -132,7 +136,7 @@ result.
 
 [Supervisor][] controls and monitors processes. It can start processes at boot,
 restart them if they fail and also report on their status. [Supervisor-alert][]
-is a simple plugin for supervisor that sends messages on process state updates
+is a simple plugin for Supervisor that sends messages on process state updates
 to an arbitrary program. Using it with telegram-send (by using the `--telegram`
 option), you can receive notifications whenever one of your processes exits.
 
