@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.8.8"
+__version__ = "0.9.0"
 
 
 def main():
@@ -39,9 +39,10 @@ def main():
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs="*")
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
-    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
@@ -55,6 +56,8 @@ def main():
         return configure(args.conf, fm_integration=True)
     elif args.configure_channel:
         return configure(args.conf, channel=True)
+    elif args.configure_group:
+        return configure(args.conf, group=True)
     elif args.file_manager:
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
@@ -123,7 +126,7 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
                 bot.send_photo(chat_id=chat_id, photo=i)
 
 
-def configure(conf, channel=False, fm_integration=False):
+def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at conf.
 
     Args:
@@ -174,8 +177,15 @@ def configure(conf, channel=False, fm_integration=False):
         print(markup("\nCongratulations! telegram-send can now post to {}".format(chat_id), "green"))
     else:
         password = "".join([str(randint(0, 9)) for _ in range(5)])
-        print("Please add {} on Telegram ({})\nand send it the password: {}\n"
-              .format(markup(bot_name, "cyan"), contact_url + bot_name, markup(password, "bold")))
+        bot_url = contact_url + bot_name
+        fancy_bot_name = markup(bot_name, "cyan")
+        if group:
+            password = "/{}@{}".format(password, bot_name)
+            print("Please add {} to your group\nand send the following message to the group: {}\n"
+                  .format(fancy_bot_name, markup(password, "bold")))
+        else:
+            print("Please add {} on Telegram ({})\nand send it the password: {}\n"
+                  .format(fancy_bot_name, bot_url, markup(password, "bold")))
 
         update, update_id = None, None
 
@@ -207,7 +217,9 @@ def configure(conf, channel=False, fm_integration=False):
     config.set("telegram", "TOKEN", token)
     config.set("telegram", "chat_id", str(chat_id))
     # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
-    makedirs_check(dirname(conf))
+    conf_dir = dirname(conf)
+    if conf_dir:
+        makedirs_check(conf_dir)
     with open(conf, "w") as f:
         config.write(f)
     if fm_integration:

@@ -5,8 +5,8 @@
 [![License](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://github.com/rahiel/telegram-send/blob/master/LICENSE.txt)
 
 Telegram-send is a command-line tool to send messages and files over Telegram to
-your account or to a channel. It provides a simple interface that can be easily
-called from other programs.
+your account, to a group or to a channel. It provides a simple interface that
+can be easily called from other programs.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
 **Table of Contents**
@@ -16,7 +16,7 @@ called from other programs.
 - [Examples](#examples)
     - [alert on completion of shell commands](#alert-on-completion-of-shell-commands)
     - [periodic messages with cron](#periodic-messages-with-cron)
-    - [supervisor process state notifications](#supervisor-process-state-notifications)
+    - [Supervisor process state notifications](#supervisor-process-state-notifications)
 - [Uninstall](#uninstall)
 
 <!-- markdown-toc end -->
@@ -69,7 +69,8 @@ echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
 impatient.)
 
 And finally configure it with `telegram-send --configure` if you want to send to
-your account, or with `telegram-send --configure-channel` to send to a channel.
+your account, `telegram-send --configure-group` to send to a group or with
+`telegram-send --configure-channel` to send to a channel.
 
 Use the `--config` option to use multiple configurations. For example to set up
 sending to a channel in a non-default configuration: `telegram-send --config
@@ -132,7 +133,7 @@ result.
 [botfather]: https://telegram.me/botfather
 [apod.py]: https://github.com/rahiel/telegram-send/blob/master/examples/apod.py
 
-## supervisor process state notifications
+## Supervisor process state notifications
 
 [Supervisor][] controls and monitors processes. It can start processes at boot,
 restart them if they fail and also report on their status. [Supervisor-alert][]
