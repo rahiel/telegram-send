@@ -31,7 +31,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 
 def main():
@@ -192,8 +192,9 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         def get_user():
             updates = bot.get_updates(offset=update_id, timeout=10)
             for update in updates:
-                if update.message.text.strip() == password:
-                    return update, None
+                if update.message:
+                    if update.message.text == password:
+                        return update, None
             if len(updates) > 0:
                 return None, updates[-1].update_id + 1
             else:
