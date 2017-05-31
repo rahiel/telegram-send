@@ -27,6 +27,8 @@ To send a message:
 ``` shell
 telegram-send "hello, world"
 ```
+There is a maximum message length of 4096 characters, larger messages will be
+automatically split up into smaller ones and sent separately.
 
 To send a message using Markdown or HTML formatting:
 ```shell

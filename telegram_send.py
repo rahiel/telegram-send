@@ -20,9 +20,11 @@ from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
 from random import randint
 from subprocess import CalledProcessError, check_output
+from warnings import warn
 
 import colorama
 import telegram
+from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
 if sys.version_info >= (3, ):
@@ -31,7 +33,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 
 def main():
@@ -109,7 +111,13 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
 
     if messages:
         for m in messages:
-            bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+            if len(m) > MAX_MESSAGE_LENGTH:
+                warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
+                ms = split_message(m, MAX_MESSAGE_LENGTH)
+                for m in ms:
+                    bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+            else:
+                bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
 
     if files:
         for f in files:
@@ -299,3 +307,13 @@ def get_config_path():
 def makedirs_check(path):
     if not exists(path):  # makedirs has "exist_ok" kw in py 3.2+
         makedirs(path)
+
+
+def split_message(message, max_length):
+    """Split large message into smaller messages each smaller than the max_length."""
+    ms = []
+    while len(message) > max_length:
+        ms.append(message[:max_length])
+        message = message[max_length:]
+    ms.append(message)
+    return ms
