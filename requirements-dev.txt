@@ -1,0 +1,4 @@
+pydoc-markdown
+pypandoc
+twine
+wheel
