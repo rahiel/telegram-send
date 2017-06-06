@@ -23,7 +23,7 @@ setup(
     license="GPLv3+",
 
     py_modules=["telegram_send"],
-    install_requires=["python-telegram-bot>=2.8.3", "colorama", "appdirs"],
+    install_requires=["python-telegram-bot>=5.0", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send:main"]},
 
     author="Rahiel Kasim",

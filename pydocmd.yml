@@ -1,0 +1,14 @@
+site_name: "telegram-send"
+
+generate:
+- api.md:
+  - telegram_send:
+    - telegram_send.configure
+    - telegram_send.send
+
+pages:
+- Home: index.md << README.md
+- API: api.md
+
+gens_dir: docs/pydocmd
+site_dir: docs/site

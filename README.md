@@ -17,6 +17,9 @@ can be easily called from other programs.
     - [alert on completion of shell commands](#alert-on-completion-of-shell-commands)
     - [periodic messages with cron](#periodic-messages-with-cron)
     - [Supervisor process state notifications](#supervisor-process-state-notifications)
+    - [Usage from Python](#usage-from-python)
+- [Questions & Answers](#questions--answers)
+    - [How to use a proxy?](#how-to-use-a-proxy)
 - [Uninstall](#uninstall)
 
 <!-- markdown-toc end -->
@@ -145,6 +148,33 @@ option), you can receive notifications whenever one of your processes exits.
 
 [supervisor]: http://supervisord.org
 [supervisor-alert]: https://github.com/rahiel/supervisor-alert
+
+## Usage from Python
+
+Because telegram-send is written in Python, you can use its functionality
+directly from other Python programs: `import telegram_send`. Look at
+the [documentation](https://pythonhosted.org/telegram-send/api/).
+
+# Questions & Answers
+
+## How to use a proxy?
+
+You can set a proxy with an environment variable:
+``` shell
+https_proxy=https://ip:port telegram-send "hello"
+```
+
+Within Python you can set the environment variable with:
+``` python
+os.environ["https_proxy"] = "https://ip:port"
+```
+
+If you have a SOCKS proxy, you need to install support for it:
+``` python
+pip3 install pysocks
+```
+If you installed `telegram-send` with `sudo`, you also need to install `pysocks`
+with `sudo`,
 
 # Uninstall
 

@@ -33,7 +33,8 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
+__all__ = ["configure", "send"]
 
 
 def main():
@@ -79,16 +80,17 @@ def main():
 
 
 def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
-    """Send data over Telegram.
+    """Send data over Telegram. All arguments are optional.
 
-    Optional Args:
-        messages (List[str])
-        conf (str): Path of configuration file to use. Will use the default config if not specified.
-            '~' expands to user's home.
-        files (List[file])
-        images (List[file])
-        captions (List[str])
-        parse_mode (str): specifies formatting of messages, an element of {"text", "markdown", "html"}
+    # Arguments
+
+    messages (List[str]): The messages to send.
+    conf (str): Path of configuration file to use. Will use the default config if not specified.
+                `~` expands to user's home directory.
+    files (List[file]): The files to send.
+    images (List[file]): The images to send.
+    captions (List[str]): The captions to send with the images.
+    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
     """
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
@@ -135,11 +137,15 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):
-    """Guide user to set up the bot, saves configuration at conf.
+    """Guide user to set up the bot, saves configuration at `conf`.
 
-    Args:
-        conf (str): Path where to save the configuration file. May contain '~' for user's home.
-        channel (Optional[bool]): Whether to configure a channel or not.
+    # Arguments
+
+    conf (str): Path where to save the configuration file. May contain `~` for
+                user's home.
+    channel (Optional[bool]): Configure a channel.
+    group (Optional[bool]): Configure a group.
+    fm_integration (Optional[bool]): Setup file manager integration.
     """
     conf = expanduser(conf) if conf else get_config_path()
     prompt = "❯ " if not sys.platform.startswith("win32") else "> "
