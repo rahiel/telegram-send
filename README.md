@@ -174,7 +174,7 @@ If you have a SOCKS proxy, you need to install support for it:
 pip3 install pysocks
 ```
 If you installed `telegram-send` with `sudo`, you also need to install `pysocks`
-with `sudo`,
+with `sudo`.
 
 # Uninstall
 

@@ -3,6 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 
+echo "Running in $VIRTUAL_ENV"
 python3 -c 'import pypandoc'
 
 rm -rf dist/
