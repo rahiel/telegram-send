@@ -82,6 +82,17 @@ def main():
 def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
     """Send data over Telegram. All arguments are optional.
 
+    The `file` type is the [file object][] returned by the `open()` function.
+    To send an image/file you open it in binary mode:
+    ``` python
+    import telegram_send
+
+    with open("image.jpg", "rb") as f:
+        telegram_send.send(images=[f])
+    ```
+
+    [file object]: https://docs.python.org/3/glossary.html#term-file-object
+
     # Arguments
 
     messages (List[str]): The messages to send.
