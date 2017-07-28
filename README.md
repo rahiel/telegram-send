@@ -15,10 +15,11 @@ can be easily called from other programs.
 - [Usage](#usage)
 - [Install](#install)
 - [Examples](#examples)
-    - [alert on completion of shell commands](#alert-on-completion-of-shell-commands)
-    - [periodic messages with cron](#periodic-messages-with-cron)
+    - [Alert on completion of shell commands](#alert-on-completion-of-shell-commands)
+    - [Periodic messages with cron](#periodic-messages-with-cron)
     - [Supervisor process state notifications](#supervisor-process-state-notifications)
     - [Usage from Python](#usage-from-python)
+    - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
     - [How to use a proxy?](#how-to-use-a-proxy)
 - [Uninstall](#uninstall)
@@ -40,6 +41,17 @@ telegram-send --format markdown "Only the *bold* use _italics_"
 telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> supported"
 ```
 For more information on supported formatting, see the [formatting documentation](https://core.telegram.org/bots/api#formatting-options).
+
+The `--pre` flag formats messages as fixed-width text:
+``` shell
+telegram-send --pre "monospace"
+```
+
+To send a message from stdin:
+``` shell
+printf 'With\nmultiple\nlines' | telegram-send --stdin
+```
+With this option you can send the output of any program.
 
 To send a file (maximum file size of 50 MB):
 ``` shell
@@ -87,7 +99,7 @@ it: `telegram-send --config channel.conf "hello"`.
 
 Here are some examples to get a taste of what is possible with telegram-send.
 
-## alert on completion of shell commands
+## Alert on completion of shell commands
 
 Receive an alert when long-running commands finish with the `tg` alias, based on
 Ubuntu's built-in `alert`. Put the following in your `~/.bashrc`:
@@ -107,7 +119,7 @@ with the Telegram backend.
 
 [ntfy]: https://github.com/dschep/ntfy
 
-## periodic messages with cron
+## Periodic messages with cron
 
 We can combine telegram-send with [cron][] to periodically send messages. Here
 we will set up a cron job to send the [Astronomy Picture of the Day][apod] to
@@ -155,6 +167,15 @@ option), you can receive notifications whenever one of your processes exits.
 Because telegram-send is written in Python, you can use its functionality
 directly from other Python programs: `import telegram_send`. Look at
 the [documentation](https://pythonhosted.org/telegram-send/api/).
+
+## ASCII pictures
+
+Combining `--stdin` and `--pre`, we can send ASCII pictures:
+
+``` shell
+ncal -bh | telegram-send --pre --stdin
+apt-get moo | telegram-send --pre --stdin
+```
 
 # Questions & Answers
 

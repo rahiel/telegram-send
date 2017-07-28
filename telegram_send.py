@@ -33,7 +33,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.9.3"
+__version__ = "0.10"
 __all__ = ["configure", "send"]
 
 
@@ -43,6 +43,8 @@ def main():
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs="*")
     parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
+    parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
@@ -69,7 +71,18 @@ def main():
     elif args.clean:
         return clean()
 
+    if args.pre:
+        args.parse_mode = "markdown"
+
+    if args.stdin:
+        message = sys.stdin.read()
+        if args.pre:
+            message = pre(message)
+        return send(messages=[message], parse_mode=args.parse_mode)
+
     try:
+        if args.pre:
+            args.message = [pre(m) for m in args.message]
         send(messages=args.message, conf=args.conf, parse_mode=args.parse_mode, files=args.file, images=args.image, captions=args.caption)
     except ConfigError as e:
         print(markup(str(e), "red"))
@@ -77,6 +90,7 @@ def main():
         if get_config_path().startswith("/etc/"):
             cmd = "sudo " + cmd
         print("Please run: " + markup(cmd, "bold"))
+        sys.exit(1)
 
 
 def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
@@ -315,6 +329,13 @@ def markup(text, style):
     ansi_codes = {"bold": "\033[1m", "red": "\033[31m", "green": "\033[32m",
                   "cyan": "\033[36m", "magenta": "\033[35m"}
     return ansi_codes[style] + text + "\033[0m"
+
+
+def pre(text):
+    if "```" in text:
+        print(markup("Sending a message containing ``` is not supported with --pre.", "red"))
+        sys.exit(1)
+    return "```text\n" + text + "```"
 
 
 def get_config_path():
