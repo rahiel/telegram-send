@@ -79,12 +79,8 @@ Or if you want to install it for a single user (recommended):
 pip3 install telegram-send
 ```
 
-If installed for a single user you need to add `~/.local/bin` to their path:
-``` shell
-echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.profile
-```
-(This will be in effect on the next login, do a `. ~/.profile` for the
-impatient.)
+If installed for a single user you need to add `~/.local/bin` to their path,
+refer to this [guide][] for instructions.
 
 And finally configure it with `telegram-send --configure` if you want to send to
 your account, `telegram-send --configure-group` to send to a group or with
@@ -94,6 +90,8 @@ Use the `--config` option to use multiple configurations. For example to set up
 sending to a channel in a non-default configuration: `telegram-send --config
 channel.conf --configure-channel`. Then always specify the config file to use
 it: `telegram-send --config channel.conf "hello"`.
+
+[guide]: https://www.cpu.re/installing-programs-from-non-system-package-managers-without-sudo/
 
 # Examples
 
