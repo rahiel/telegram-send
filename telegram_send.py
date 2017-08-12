@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
 # Copyright (C) 2016-2017  Rahiel Kasim
