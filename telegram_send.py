@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
 # Copyright (C) 2016-2017  Rahiel Kasim
@@ -50,6 +51,7 @@ def main():
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-t", "--timeout", help="adjust timeout", nargs="?", type=int, default=20)
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
@@ -78,12 +80,12 @@ def main():
         message = sys.stdin.read()
         if args.pre:
             message = pre(message)
-        return send(messages=[message], parse_mode=args.parse_mode)
+        return send(messages=[message], parse_mode=args.parse_mode, timeout=args.timeout)
 
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
-        send(messages=args.message, conf=args.conf, parse_mode=args.parse_mode, files=args.file, images=args.image, captions=args.caption)
+        send(messages=args.message, conf=args.conf, parse_mode=args.parse_mode, files=args.file, images=args.image, captions=args.caption, timeout=args.timeout)
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -93,7 +95,7 @@ def main():
         sys.exit(1)
 
 
-def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
+def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None, timeout=20):
     """Send data over Telegram. All arguments are optional.
 
     The `file` type is the [file object][] returned by the `open()` function.
@@ -142,23 +144,23 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
                 warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
-                    bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+                    bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode, timeout=timeout)
             else:
-                bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+                bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode, timeout=timeout)
 
     if files:
         for f in files:
-            bot.send_document(chat_id=chat_id, document=f)
+            bot.send_document(chat_id=chat_id, document=f, timeout=timeout)
 
     if images:
         if captions:
             # make captions equal length when not all images have captions
             captions += [None] * (len(images) - len(captions))
             for i, c in zip(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c)
+                bot.send_photo(chat_id=chat_id, photo=i, caption=c, timeout=timeout)
         else:
             for i in images:
-                bot.send_photo(chat_id=chat_id, photo=i)
+                bot.send_photo(chat_id=chat_id, photo=i, timeout=timeout)
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):
@@ -355,3 +357,7 @@ def split_message(message, max_length):
         message = message[max_length:]
     ms.append(message)
     return ms
+
+
+if __name__ == "__main__":
+    main()
