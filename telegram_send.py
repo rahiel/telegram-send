@@ -35,7 +35,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.12"
+__version__ = "0.13"
 __all__ = ["configure", "send"]
 
 
@@ -56,6 +56,7 @@ def main():
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
+    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
@@ -69,7 +70,8 @@ def main():
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
         else:
-            print("File manager integration is unavailable on Windows.")
+            print(markup("File manager integration is unavailable on Windows.", "red"))
+            sys.exit(1)
     elif args.clean:
         return clean()
 
@@ -85,7 +87,15 @@ def main():
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
-        send(messages=args.message, conf=args.conf, parse_mode=args.parse_mode, files=args.file, images=args.image, captions=args.caption)
+        send(
+            messages=args.message,
+            conf=args.conf,
+            parse_mode=args.parse_mode,
+            files=args.file,
+            images=args.image,
+            captions=args.caption,
+            timeout=args.timeout
+        )
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -93,9 +103,17 @@ def main():
             cmd = "sudo " + cmd
         print("Please run: " + markup(cmd, "bold"))
         sys.exit(1)
+    except telegram.error.NetworkError as e:
+        if "timed out" in str(e).lower():
+            print(markup("Error: Connection timed out", "red"))
+            print("Please run with a longer timeout.\n"
+                  "Try with the option: " + markup("--timeout {}".format(args.timeout + 10), "bold"))
+            sys.exit(1)
+        else:
+            raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None):
+def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     The `file` type is the [file object][] returned by the `open()` function.
@@ -118,6 +136,7 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
     images (List[file]): The images to send.
     captions (List[str]): The captions to send with the images.
     parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
+    timeout (int|float): The read timeout for network connections in seconds.
     """
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
@@ -129,7 +148,7 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
     token = config.get("telegram", "token")
     chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
 
-    request = telegram.utils.request.Request(read_timeout=40)
+    request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
     # We let the user specify "text" as a parse mode to be more explicit about
