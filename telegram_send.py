@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
+import re
 import sys
 from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
@@ -34,7 +35,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.11"
+__version__ = "0.12"
 __all__ = ["configure", "send"]
 
 
@@ -197,25 +198,34 @@ def configure(conf, channel=False, group=False, fm_integration=False):
     print("Connected with {}.\n".format(markup(bot_name, "cyan")))
 
     if channel:
-        print("Enter your channel's public name or link:"
-              .format(markup(bot_name, "cyan")))
-        chat_id = input(markup(prompt, "magenta")).strip()
-        if "telegram.me" in chat_id:
-            chat_id = "@" + chat_id.split("/")[-1]
-        elif chat_id.startswith("@"):
-            pass
+        print("Do you want to send to a {} or a {} channel? [pub/priv]"
+              .format(markup("public", "bold"), markup("private", "bold")))
+        channel_type = input(markup(prompt, "magenta")).strip()
+        if channel_type.startswith("pub"):
+            print("\nEnter your channel's public name or link:")
+            chat_id = input(markup(prompt, "magenta")).strip()
+            if "/" in chat_id:
+                chat_id = "@" + chat_id.split("/")[-1]
+            elif chat_id.startswith("@"):
+                pass
+            else:
+                chat_id = "@" + chat_id
         else:
-            chat_id = "@" + chat_id
+            print("\nOpen https://web.telegram.org in your browser, sign in and open your private channel."
+                  "\nNow copy the URL in the address bar and enter it here:")
+            url = input(markup(prompt, "magenta")).strip()
+            chat_id = "-100" + re.match(".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
 
         authorized = False
         while not authorized:
             try:
                 bot.send_chat_action(chat_id=chat_id, action="typing")
                 authorized = True
-            except telegram.error.Unauthorized:
-                input("Please add {} as administrator to {} and press Enter"
-                      .format(markup(bot_name, "cyan"), markup(chat_id, "cyan")))
-        print(markup("\nCongratulations! telegram-send can now post to {}".format(chat_id), "green"))
+            except (telegram.error.Unauthorized, telegram.error.BadRequest):
+                # Telegram returns a BadRequest when a non-admin bot tries to send to a private channel
+                input("Please add {} as administrator to your channel and press Enter"
+                      .format(markup(bot_name, "cyan")))
+        print(markup("\nCongratulations! telegram-send can now post to your channel!", "green"))
     else:
         password = "".join([str(randint(0, 9)) for _ in range(5)])
         bot_url = contact_url + bot_name
