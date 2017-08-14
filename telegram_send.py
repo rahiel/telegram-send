@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
 # Copyright (C) 2016-2017  Rahiel Kasim
@@ -33,7 +34,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.10"
+__version__ = "0.11"
 __all__ = ["configure", "send"]
 
 
@@ -127,7 +128,8 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
     token = config.get("telegram", "token")
     chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
 
-    bot = telegram.Bot(token)
+    request = telegram.utils.request.Request(read_timeout=40)
+    bot = telegram.Bot(token, request=request)
 
     # We let the user specify "text" as a parse mode to be more explicit about
     # the lack of formatting applied to the message, but "text" isn't a supported
@@ -355,3 +357,7 @@ def split_message(message, max_length):
         message = message[max_length:]
     ms.append(message)
     return ms
+
+
+if __name__ == "__main__":
+    main()
