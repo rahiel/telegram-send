@@ -29,13 +29,18 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
+try:
+    import readline
+except:
+    pass
+
 if sys.version_info >= (3, ):
     import configparser
 else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.13"
+__version__ = "0.14"
 __all__ = ["configure", "send"]
 
 
