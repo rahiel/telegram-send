@@ -71,7 +71,7 @@ Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
 
 Install telegram-send system-wide with pip:
 ``` shell
-sudo pip3 install telegram-send
+sudo -H pip3 install telegram-send
 ```
 
 Or if you want to install it for a single user (recommended):
@@ -200,7 +200,7 @@ with `sudo`.
 
 ``` shell
 sudo telegram-send --clean
-sudo pip3 uninstall telegram-send
+sudo -H pip3 uninstall telegram-send
 ```
 
 Or if you installed it for a single user:
