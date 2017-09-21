@@ -13,7 +13,7 @@ can be easily called from other programs.
 **Table of Contents**
 
 - [Usage](#usage)
-- [Install](#install)
+- [Installation](#installation)
 - [Examples](#examples)
     - [Alert on completion of shell commands](#alert-on-completion-of-shell-commands)
     - [Periodic messages with cron](#periodic-messages-with-cron)
@@ -22,7 +22,7 @@ can be easily called from other programs.
     - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
     - [How to use a proxy?](#how-to-use-a-proxy)
-- [Uninstall](#uninstall)
+- [Uninstallation](#uninstallation)
 
 <!-- markdown-toc end -->
 
@@ -67,14 +67,14 @@ Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
 
 ![](https://cloud.githubusercontent.com/assets/6839756/16735957/51c41cf4-478b-11e6-874a-282f559fb9d3.png)
 
-# Install
+# Installation
 
 Install telegram-send system-wide with pip:
 ``` shell
 sudo pip3 install telegram-send
 ```
 
-Or if you want to install it for a single user (recommended):
+Or if you want to install it for a single user without root permissions:
 ``` shell
 pip3 install telegram-send
 ```
@@ -89,7 +89,12 @@ your account, `telegram-send --configure-group` to send to a group or with
 Use the `--config` option to use multiple configurations. For example to set up
 sending to a channel in a non-default configuration: `telegram-send --config
 channel.conf --configure-channel`. Then always specify the config file to use
-it: `telegram-send --config channel.conf "hello"`.
+it: `telegram-send --config channel.conf "Bismillah"`.
+
+The `-gc` option uses the global configuration at `/etc/telegram-send.conf`.
+Configure it once: `sudo telegram-send -gc --configure` and all users on the
+system can send messages with this config: `telegram-send -gc "GNU"` (provided
+you've installed it system-wide.)
 
 [guide]: https://www.cpu.re/installing-programs-from-non-system-package-managers-without-sudo/
 
@@ -196,7 +201,7 @@ pip3 install pysocks
 If you installed `telegram-send` with `sudo`, you also need to install `pysocks`
 with `sudo`.
 
-# Uninstall
+# Uninstallation
 
 ``` shell
 sudo telegram-send --clean

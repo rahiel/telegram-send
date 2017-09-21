@@ -40,9 +40,10 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.14"
+__version__ = "0.15"
 __all__ = ["configure", "send"]
 
+global_config = "/etc/telegram-send.conf"
 
 def main():
     colorama.init()
@@ -59,18 +60,24 @@ def main():
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
+    parser.add_argument("-gc", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
     parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
+    if args.global_config:
+        conf = global_config
+    else:
+        conf = args.conf
+
     if args.configure:
-        return configure(args.conf, fm_integration=True)
+        return configure(conf, fm_integration=True)
     elif args.configure_channel:
-        return configure(args.conf, channel=True)
+        return configure(conf, channel=True)
     elif args.configure_group:
-        return configure(args.conf, group=True)
+        return configure(conf, group=True)
     elif args.file_manager:
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
@@ -94,7 +101,7 @@ def main():
             args.message = [pre(m) for m in args.message]
         send(
             messages=args.message,
-            conf=args.conf,
+            conf=conf,
             parse_mode=args.parse_mode,
             files=args.file,
             images=args.image,
@@ -104,8 +111,8 @@ def main():
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
-        if get_config_path().startswith("/etc/"):
-            cmd = "sudo " + cmd
+        if args.global_config:
+            cmd = "sudo " + cmd + " --global-config"
         print("Please run: " + markup(cmd, "bold"))
         sys.exit(1)
     except telegram.error.NetworkError as e:
@@ -355,6 +362,13 @@ def clean():
     conf = get_config_path()
     if exists(conf):
         remove(conf)
+    if exists(global_config):
+        try:
+            remove(global_config)
+        except PermissionError:
+            print(markup("Can't delete /etc/telegram-send.conf", "red"))
+            print("Please run: " + markup("sudo telegram-send --clean", "bold"))
+            sys.exit(1)
 
 
 class ConfigError(Exception):
