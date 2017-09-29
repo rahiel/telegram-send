@@ -40,7 +40,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.15"
+__version__ = "0.16"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
@@ -92,6 +92,8 @@ def main():
 
     if args.stdin:
         message = sys.stdin.read()
+        if len(message) == 0:
+            sys.exit(0)
         if args.pre:
             message = pre(message)
         return send(messages=[message], parse_mode=args.parse_mode)
@@ -177,6 +179,8 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
                     bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+            elif len(m) == 0:
+                continue
             else:
                 bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
 
