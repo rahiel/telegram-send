@@ -19,6 +19,7 @@ can be easily called from other programs.
     - [Periodic messages with cron](#periodic-messages-with-cron)
     - [Supervisor process state notifications](#supervisor-process-state-notifications)
     - [Usage from Python](#usage-from-python)
+    - [Cron job output](#cron-job-output)
     - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
     - [How to use a proxy?](#how-to-use-a-proxy)
@@ -170,6 +171,32 @@ option), you can receive notifications whenever one of your processes exits.
 Because telegram-send is written in Python, you can use its functionality
 directly from other Python programs: `import telegram_send`. Look at
 the [documentation](https://pythonhosted.org/telegram-send/api/).
+
+## Cron job output
+
+Cron has a built-in feature to send the output of jobs via mail. In this example
+we'll send cron output over Telegram. Here is the example cron job:
+
+``` shell
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user  command
+0 * * * * rahiel chronic ~/script.bash 2>&1 | telegram-send -g --stdin
+```
+
+The command is `chronic ~/script.bash 2>&1 | telegram-send -g --stdin`. We run
+the cron job with `chronic`, a tool from [moreutils][]. Chronic makes sure that
+a command produces no output unless it fails. No news is good news! If our
+script fails, chronic passes the output through the pipe (`|`) to telegram-send.
+We also send the output of stderr by redirecting stderr to stdout (`2>&1`).
+
+Here we've installed telegram-send system-wide with `sudo` and use the global
+configuration (`-g`) so `telegram-send` is usable in the cron job. Place the
+cron job in `/etc/cron.d/` and make sure the file ends with a newline. The
+filename can't contain a `.` either.
+
+[moreutils]: https://joeyh.name/code/moreutils/
 
 ## ASCII pictures
 

@@ -40,7 +40,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.17"
+__version__ = "0.18"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
