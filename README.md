@@ -91,9 +91,9 @@ sending to a channel in a non-default configuration: `telegram-send --config
 channel.conf --configure-channel`. Then always specify the config file to use
 it: `telegram-send --config channel.conf "Bismillah"`.
 
-The `-gc` option uses the global configuration at `/etc/telegram-send.conf`.
-Configure it once: `sudo telegram-send -gc --configure` and all users on the
-system can send messages with this config: `telegram-send -gc "GNU"` (provided
+The `-g` option uses the global configuration at `/etc/telegram-send.conf`.
+Configure it once: `sudo telegram-send -g --configure` and all users on the
+system can send messages with this config: `telegram-send -g "GNU"` (provided
 you've installed it system-wide.)
 
 [guide]: https://www.cpu.re/installing-programs-from-non-system-package-managers-without-sudo/

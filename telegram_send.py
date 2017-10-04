@@ -60,7 +60,7 @@ def main():
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
-    parser.add_argument("-gc", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
+    parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
     parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
