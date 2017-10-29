@@ -169,8 +169,8 @@ option), you can receive notifications whenever one of your processes exits.
 ## Usage from Python
 
 Because telegram-send is written in Python, you can use its functionality
-directly from other Python programs: `import telegram_send`. Look at
-the [documentation](https://pythonhosted.org/telegram-send/api/).
+directly from other Python programs: `import telegram_send`. Look at the
+[documentation](https://www.cpu.re/telegram-send/docs/api/).
 
 ## Cron job output
 

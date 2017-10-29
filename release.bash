@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-IFS=$'\n\t'
 
 
 echo "Running in $VIRTUAL_ENV"
@@ -15,10 +14,11 @@ printf "\n"
 twine upload dist/* -p "$password"
 
 # Make documentation
-rm -rf docs/ docs.zip
+rm -rf docs/
 pydocmd build
+
+# Upload docs
 cd docs/site/
-zip -r docs.zip ./*
+rsync -acrhvzP --delete ./ rahiel@ghazali:~/cpu.re/public/telegram-send/docs
+# archive, checksum, recursive, human readable, verbose, compress, partial/progress
 cd -
-mv ./docs/site/docs.zip ./
-echo -e "\n\nUpload docs.zip at: https://pypi.python.org/pypi?%3Aaction=pkg_edit&name=telegram-send"
