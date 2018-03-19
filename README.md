@@ -48,6 +48,11 @@ The `--pre` flag formats messages as fixed-width text:
 telegram-send --pre "monospace"
 ```
 
+To send a message without link previews:
+``` shell
+telegram-send --disable-web-page-preview "https://github.com/rahiel/telegram-send"
+```
+
 To send a message from stdin:
 ``` shell
 printf 'With\nmultiple\nlines' | telegram-send --stdin
