@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016-2017  Rahiel Kasim
+# Copyright (C) 2016-2018  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.18"
+__version__ = "0.19"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
@@ -53,6 +53,7 @@ def main():
     parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
+    parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
@@ -96,7 +97,7 @@ def main():
             sys.exit(0)
         if args.pre:
             message = pre(message)
-        return send(messages=[message], conf=conf, parse_mode=args.parse_mode)
+        return send(messages=[message], conf=conf, parse_mode=args.parse_mode, disable_web_page_preview=args.disable_web_page_preview)
 
     try:
         if args.pre:
@@ -105,6 +106,7 @@ def main():
             messages=args.message,
             conf=conf,
             parse_mode=args.parse_mode,
+            disable_web_page_preview=args.disable_web_page_preview,
             files=args.file,
             images=args.image,
             captions=args.caption,
@@ -127,8 +129,12 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, files=None, images=None, captions=None, timeout=30):
+def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None, captions=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
+
+    Always use this function with explicit keyword arguments. So
+    `send(messages=["Hello!"])` instead of `send(["Hello!"])` as the latter
+    will *break* when I change the order of the arguments.
 
     The `file` type is the [file object][] returned by the `open()` function.
     To send an image/file you open it in binary mode:
@@ -143,13 +149,14 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
 
     # Arguments
 
-    messages (List[str]): The messages to send.
     conf (str): Path of configuration file to use. Will use the default config if not specified.
                 `~` expands to user's home directory.
+    messages (List[str]): The messages to send.
+    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
+    disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
     captions (List[str]): The captions to send with the images.
-    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
     timeout (int|float): The read timeout for network connections in seconds.
     """
     conf = expanduser(conf) if conf else get_config_path()
@@ -173,16 +180,20 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
         parse_mode = None
 
     if messages:
+
+        def send_message(message):
+            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_web_page_preview=disable_web_page_preview)
+
         for m in messages:
             if len(m) > MAX_MESSAGE_LENGTH:
                 warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
-                    bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+                    send_message(m)
             elif len(m) == 0:
                 continue
             else:
-                bot.send_message(chat_id=chat_id, text=m, parse_mode=parse_mode)
+                send_message(m)
 
     if files:
         for f in files:
@@ -192,7 +203,7 @@ def send(messages=None, conf=None, parse_mode=None, files=None, images=None, cap
         if captions:
             # make captions equal length when not all images have captions
             captions += [None] * (len(images) - len(captions))
-            for i, c in zip(images, captions):
+            for (i, c) in zip(images, captions):
                 bot.send_photo(chat_id=chat_id, photo=i, caption=c)
         else:
             for i in images:
