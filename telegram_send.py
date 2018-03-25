@@ -40,7 +40,7 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.19"
+__version__ = "0.20"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
@@ -50,7 +50,8 @@ def main():
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs="*")
-    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"], help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"],
+                        help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
     parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
@@ -59,7 +60,7 @@ def main():
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("-l", "--location", help="send location via latitude and longitude (can be separated via whitespace or a comma)", nargs="+")
+    parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
@@ -110,8 +111,8 @@ def main():
             disable_web_page_preview=args.disable_web_page_preview,
             files=args.file,
             images=args.image,
-            locations=args.location,
             captions=args.caption,
+            locations=args.location,
             timeout=args.timeout
         )
     except ConfigError as e:
@@ -131,7 +132,8 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None, locations=None, captions=None, timeout=30):
+def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None,
+         captions=None, locations=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -158,8 +160,9 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
-    locations (List[str]): The locations to send.
     captions (List[str]): The captions to send with the images.
+    locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
+                           separated by whitespace or a comma.
     timeout (int|float): The read timeout for network connections in seconds.
     """
     conf = expanduser(conf) if conf else get_config_path()
@@ -215,8 +218,8 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     if locations:
         it = iter(locations)
         for loc in it:
-            if ',' in loc:
-                lat, lon = loc.split(',')
+            if "," in loc:
+                lat, lon = loc.split(",")
             else:
                 lat = loc
                 lon = next(it)
