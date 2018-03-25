@@ -220,7 +220,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
             else:
                 lat = loc
                 lon = next(it)
-            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=(lon))
+            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):
