@@ -59,6 +59,7 @@ def main():
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-l", "--location", help="send location via latitude and longitude (can be separated via whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
@@ -109,6 +110,7 @@ def main():
             disable_web_page_preview=args.disable_web_page_preview,
             files=args.file,
             images=args.image,
+            locations=args.location,
             captions=args.caption,
             timeout=args.timeout
         )
@@ -129,7 +131,7 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None, captions=None, timeout=30):
+def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None, locations=None, captions=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -156,6 +158,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
+    locations (List[str]): The locations to send.
     captions (List[str]): The captions to send with the images.
     timeout (int|float): The read timeout for network connections in seconds.
     """
@@ -208,6 +211,16 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
         else:
             for i in images:
                 bot.send_photo(chat_id=chat_id, photo=i)
+
+    if locations:
+        it = iter(locations)
+        for loc in it:
+            if ',' in loc:
+                lat, lon = loc.split(',')
+            else:
+                lat = loc
+                lon = next(it)
+            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):

@@ -69,6 +69,11 @@ To send an image with an optional caption (maximum file size of 10 MB):
 telegram-send --image photo.jpg --caption "The Moon at night"
 ```
 
+To send a location via latitude and longitude:
+``` shell
+telegram-send --location 35.5398033 -79.7488965
+```
+
 Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
 
 ![](https://cloud.githubusercontent.com/assets/6839756/16735957/51c41cf4-478b-11e6-874a-282f559fb9d3.png)
