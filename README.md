@@ -107,7 +107,7 @@ Configure it once: `sudo telegram-send -g --configure` and all users on the
 system can send messages with this config: `telegram-send -g "GNU"` (provided
 you've installed it system-wide.)
 
-[guide]: https://www.cpu.re/installing-programs-from-non-system-package-managers-without-sudo/
+[guide]: https://www.rahielkasim.com/installing-programs-from-non-system-package-managers-without-sudo/
 
 # Examples
 
@@ -180,7 +180,9 @@ option), you can receive notifications whenever one of your processes exits.
 
 Because telegram-send is written in Python, you can use its functionality
 directly from other Python programs: `import telegram_send`. Look at the
-[documentation](https://www.cpu.re/telegram-send/docs/api/).
+[documentation][].
+
+[documentation]: https://www.rahielkasim.com/telegram-send/docs/api/
 
 ## Cron job output
 
