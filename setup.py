@@ -28,7 +28,7 @@ setup(
 
     author="Rahiel Kasim",
     author_email="rahielkasim@gmail.com",
-    # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+    # https://pypi.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         "Development Status :: 4 - Beta",
         # "Development Status :: 5 - Production/Stable",

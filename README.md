@@ -1,7 +1,7 @@
 # telegram-send
 
-[![Version](https://img.shields.io/pypi/v/telegram-send.svg)](https://pypi.python.org/pypi/telegram-send)
-[![pyversions](https://img.shields.io/pypi/pyversions/telegram-send.svg)](https://pypi.python.org/pypi/telegram-send)
+[![Version](https://img.shields.io/pypi/v/telegram-send.svg)](https://pypi.org/project/telegram-send/)
+[![pyversions](https://img.shields.io/pypi/pyversions/telegram-send.svg)](https://pypi.org/project/telegram-send/)
 [![Downloads](https://www.cpu.re/static/telegram-send/downloads.svg)](https://www.cpu.re/static/telegram-send/downloads-by-python-version.txt)
 [![License](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://github.com/rahiel/telegram-send/blob/master/LICENSE.txt)
 
