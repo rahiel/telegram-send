@@ -228,7 +228,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     timeout (int|float): The read timeout for network connections in seconds.
     """
     chat_id = get_conf(conf)['chat_id']
-    bot = get_bot(conf, timeout=30)
+    bot = get_bot(conf, timeout)
 
     # We let the user specify "text" as a parse mode to be more explicit about
     # the lack of formatting applied to the message, but "text" isn't a supported
