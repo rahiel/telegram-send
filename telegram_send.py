@@ -30,6 +30,12 @@ from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
 try:
+    from functools import lru_cache
+except ImportError:
+    # python 2.x
+    lru_cache = (lambda maxsize: (lambda fn: fn))
+
+try:
     import readline
 except:
     pass
@@ -44,6 +50,7 @@ __version__ = "0.20"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
+
 
 def main():
     colorama.init()
@@ -132,6 +139,61 @@ def main():
             raise(e)
 
 
+def get_conf(conf=None):
+    conf = expanduser(conf) if conf else get_config_path()
+    config = configparser.ConfigParser()
+    if not config.read(conf) or not config.has_section("telegram"):
+        raise ConfigError("Config not found")
+    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
+    if len(missing_options) > 0:
+        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+    return {
+        'token': config.get("telegram", "token"),
+        'chat_id': int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
+    }
+
+
+@lru_cache(maxsize=32)
+def get_bot(conf=None, timeout=30):
+    config = get_conf(conf)
+    request = telegram.utils.request.Request(read_timeout=timeout)
+    return telegram.Bot(config['token'], request=request)
+
+
+def create_live_location(location, conf=None, live_period=60):
+    chat_id = get_conf(conf)['chat_id']
+    lat, lon = _parse_location(location)
+    return get_bot(conf).send_location(
+        chat_id=chat_id,
+        latitude=lat,
+        longitude=lon,
+        live_period=live_period)
+
+
+def stop_live_location(message_id, conf=None):
+    chat_id = get_conf(conf)['chat_id']
+    return get_bot(conf).stop_message_live_location(chat_id, message_id)
+
+
+def update_live_location(location, message_id, conf=None):
+    chat_id = get_conf(conf)['chat_id']
+    lat, lon = _parse_location(location)
+    return get_bot(conf).edit_message_live_location(
+        chat_id,
+        message_id,
+        latitude=lat,
+        longitude=lon)
+
+
+def _parse_location(loc, it=None):
+    if "," in loc:
+        lat, lon = loc.split(",")
+    else:
+        lat = loc
+        lon = next(it)
+    return float(lat), float(lon)
+
+
 def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None,
          captions=None, locations=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
@@ -165,18 +227,8 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
                            separated by whitespace or a comma.
     timeout (int|float): The read timeout for network connections in seconds.
     """
-    conf = expanduser(conf) if conf else get_config_path()
-    config = configparser.ConfigParser()
-    if not config.read(conf) or not config.has_section("telegram"):
-        raise ConfigError("Config not found")
-    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
-    if len(missing_options) > 0:
-        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    token = config.get("telegram", "token")
-    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
-
-    request = telegram.utils.request.Request(read_timeout=timeout)
-    bot = telegram.Bot(token, request=request)
+    chat_id = get_conf(conf)['chat_id']
+    bot = get_bot(conf, timeout=30)
 
     # We let the user specify "text" as a parse mode to be more explicit about
     # the lack of formatting applied to the message, but "text" isn't a supported
@@ -218,12 +270,8 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     if locations:
         it = iter(locations)
         for loc in it:
-            if "," in loc:
-                lat, lon = loc.split(",")
-            else:
-                lat = loc
-                lon = next(it)
-            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))
+            lat, lon = _parse_location(loc, it)
+            bot.send_location(chat_id=chat_id, latitude=lat, longitude=lon)
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):
