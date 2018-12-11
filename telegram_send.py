@@ -20,6 +20,7 @@ import re
 import sys
 from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
+from exceptions import OSError
 from random import randint
 from subprocess import CalledProcessError, check_output
 from warnings import warn
@@ -66,7 +67,7 @@ def main():
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
-    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
+    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30., action="store")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
@@ -255,7 +256,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         bot_name = bot.get_me().username
     except:
         print(markup("Something went wrong, please try again.\n", "red"))
-        return configure()
+        return configure(conf, channel=channel, group=group, fm_integration=fm_integration)
 
     print("Connected with {}.\n".format(markup(bot_name, "cyan")))
 
@@ -396,7 +397,7 @@ def clean():
     if exists(global_config):
         try:
             remove(global_config)
-        except PermissionError:
+        except OSError:
             print(markup("Can't delete /etc/telegram-send.conf", "red"))
             print("Please run: " + markup("sudo telegram-send --clean", "bold"))
             sys.exit(1)
