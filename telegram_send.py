@@ -63,6 +63,8 @@ def main():
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
+    parser.add_argument("--showids", help="show message ids (useful to cancel a message afterwards)", action="store_true")
+    parser.add_argument("-d", "--delete", metavar="id", help="cancel messages by id (only last 48h), see --showids", nargs="+", type=int)
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
@@ -105,7 +107,8 @@ def main():
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
-        send(
+        cancel(args.delete)
+        message_ids = send(
             messages=args.message,
             conf=conf,
             parse_mode=args.parse_mode,
@@ -116,6 +119,10 @@ def main():
             locations=args.location,
             timeout=args.timeout
         )
+        if args.showids and message_ids:
+            smessage_ids = [str(m) for m in message_ids]
+            print "message_ids " + " ".join(smessage_ids)
+
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -186,6 +193,9 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     if parse_mode == "text":
         parse_mode = None
 
+    # collcet all message ids sent during the current invokation
+    message_ids = []
+
     if messages:
 
         def send_message(message):
@@ -196,25 +206,25 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
                 warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
-                    send_message(m)
+                    message_ids += [send_message(m)["message_id"]]
             elif len(m) == 0:
                 continue
             else:
-                send_message(m)
+                message_ids += [send_message(m)["message_id"]]
 
     if files:
         for f in files:
-            bot.send_document(chat_id=chat_id, document=f)
+            message_ids += [bot.send_document(chat_id=chat_id, document=f)]
 
     if images:
         if captions:
             # make captions equal length when not all images have captions
             captions += [None] * (len(images) - len(captions))
             for (i, c) in zip(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c)
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, caption=c)["message_id"]]
         else:
             for i in images:
-                bot.send_photo(chat_id=chat_id, photo=i)
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i)["message_id"]]
 
     if locations:
         it = iter(locations)
@@ -224,8 +234,44 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
             else:
                 lat = loc
                 lon = next(it)
-            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))
+            message_ids += [bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))["message_id"]]
 
+    return message_ids
+
+
+def cancel(message_ids, conf=None, timeout=30):
+    """Cancel messages that have been sent before over Telegram. Restrictions given by Telegram API apply.
+
+    Note that Telegram restricts this to messages which have been sent during the last 48 hours.
+    https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html#telegram.Bot.delete_message
+
+    # Arguments
+
+    message_ids (List[str]): The messages ids of all messages to be deleted.
+    conf (str): Path of configuration file to use. Will use the default config if not specified.
+                `~` expands to user's home directory.
+    timeout (int|float): The read timeout for network connections in seconds.    
+    """
+
+    conf = expanduser(conf) if conf else get_config_path()
+    config = configparser.ConfigParser()
+    if not config.read(conf) or not config.has_section("telegram"):
+        raise ConfigError("Config not found")
+    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
+    if len(missing_options) > 0:
+        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+    token = config.get("telegram", "token")
+    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
+
+    request = telegram.utils.request.Request(read_timeout=timeout)
+    bot = telegram.Bot(token, request=request)
+
+    if message_ids:
+        for m in message_ids:
+            try:
+                bot.delete_message(chat_id=chat_id, message_id=m, timeout=timeout)
+            except telegram.TelegramError as e:
+                warn(markup("Cancelling message id#%d failed: %s" % (m, str(e)) , "red"))
 
 def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
