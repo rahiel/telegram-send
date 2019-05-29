@@ -61,7 +61,7 @@ def main():
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
-    parser.add_argument("--caption", help="caption for image(s)", nargs="+")
+    parser.add_argument("--caption", help="caption for image(s) or file(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
@@ -202,8 +202,13 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
                 send_message(m)
 
     if files:
-        for f in files:
-            bot.send_document(chat_id=chat_id, document=f)
+        if captions:
+            captions += [None] * (len(captions) - len(captions))
+            for (f, c) in zip(files, captions):
+                bot.send_document(chat_id=chat_id, document=f, caption=c)
+        else:
+            for f in files:
+                bot.send_document(chat_id=chat_id, document=f)
 
     if images:
         if captions:
