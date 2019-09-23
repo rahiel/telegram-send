@@ -60,6 +60,7 @@ def main():
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
@@ -111,6 +112,7 @@ def main():
             disable_web_page_preview=args.disable_web_page_preview,
             files=args.file,
             images=args.image,
+            stickers=args.sticker,
             captions=args.caption,
             locations=args.location,
             timeout=args.timeout
@@ -132,8 +134,8 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None,
-         captions=None, locations=None, timeout=30):
+def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None, stickers=None,
+    captions=None, locations=None, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -214,6 +216,9 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
         else:
             for i in images:
                 bot.send_photo(chat_id=chat_id, photo=i)
+    if stickers:
+        for i in stickers:
+            bot.send_sticker(chat_id=chat_id, sticker=i)
 
     if locations:
         it = iter(locations)

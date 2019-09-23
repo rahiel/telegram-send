@@ -69,6 +69,11 @@ To send an image with an optional caption (maximum file size of 10 MB):
 telegram-send --image photo.jpg --caption "The Moon at night"
 ```
 
+To send an sticker (use `file_id` or downloaded sticker file):
+``` shell
+telegram-send --sticker sticker.webp
+```
+
 To send a location via latitude and longitude:
 ``` shell
 telegram-send --location 35.5398033 -79.7488965
