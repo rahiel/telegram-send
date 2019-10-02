@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from setuptools import setup
 
-from telegram_send import __version__
+from version import __version__
 
 
 try:
@@ -23,7 +23,7 @@ setup(
     license="GPLv3+",
 
     py_modules=["telegram_send"],
-    install_requires=["python-telegram-bot>=5.0", "colorama", "appdirs"],
+    install_requires=["python-telegram-bot>=12.1.1", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send:main"]},
 
     author="Rahiel Kasim",

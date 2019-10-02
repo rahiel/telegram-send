@@ -29,6 +29,8 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
+from version import __version__
+
 try:
     import readline
 except:
@@ -40,7 +42,6 @@ else:             # python 2.7
     import ConfigParser as configparser
     input = raw_input
 
-__version__ = "0.20"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
