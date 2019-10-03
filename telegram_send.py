@@ -34,7 +34,7 @@ from version import __version__
 
 try:
     import readline
-except:
+except ImportError:
     pass
 
 __all__ = ["configure", "send"]
@@ -51,6 +51,7 @@ def main():
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
     parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
+    parser.add_argument("--silent", help="send silently, user will receive a notification without sound", action="store_true")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
@@ -95,7 +96,7 @@ def main():
             sys.exit(0)
         if args.pre:
             message = pre(message)
-        return send(messages=[message], conf=conf, parse_mode=args.parse_mode, disable_web_page_preview=args.disable_web_page_preview)
+        return send(messages=[message], conf=conf, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
 
     try:
         if args.pre:
@@ -104,6 +105,7 @@ def main():
             messages=args.message,
             conf=conf,
             parse_mode=args.parse_mode,
+            silent=args.silent,
             disable_web_page_preview=args.disable_web_page_preview,
             files=args.file,
             images=args.image,
@@ -128,13 +130,13 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None,
-         captions=None, locations=None, timeout=30):
+def send(*,
+         messages=None, files=None, images=None, captions=None, locations=None,
+         conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
-    `send(messages=["Hello!"])` instead of `send(["Hello!"])` as the latter
-    will *break* when I change the order of the arguments.
+    `send(messages=["Hello!"])` instead of `send(["Hello!"])`.
 
     The `file` type is the [file object][] returned by the `open()` function.
     To send an image/file you open it in binary mode:
@@ -153,12 +155,13 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
                 `~` expands to user's home directory.
     messages (List[str]): The messages to send.
     parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
-    disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
     captions (List[str]): The captions to send with the images.
     locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
                            separated by whitespace or a comma.
+    silent (bool): Send silently without sound.
+    disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     timeout (int|float): The read timeout for network connections in seconds.
     """
     conf = expanduser(conf) if conf else get_config_path()
@@ -184,7 +187,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     if messages:
 
         def send_message(message):
-            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_web_page_preview=disable_web_page_preview)
+            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_notification=silent, disable_web_page_preview=disable_web_page_preview)
 
         for m in messages:
             if len(m) > MAX_MESSAGE_LENGTH:
@@ -199,17 +202,17 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
 
     if files:
         for f in files:
-            bot.send_document(chat_id=chat_id, document=f)
+            bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)
 
     if images:
         if captions:
             # make captions equal length when not all images have captions
             captions += [None] * (len(images) - len(captions))
             for (i, c) in zip(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c)
+                bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)
         else:
             for i in images:
-                bot.send_photo(chat_id=chat_id, photo=i)
+                bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)
 
     if locations:
         it = iter(locations)
@@ -219,7 +222,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
             else:
                 lat = loc
                 lon = next(it)
-            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))
+            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon), disable_notification=silent)
 
 
 def configure(conf, channel=False, group=False, fm_integration=False):
