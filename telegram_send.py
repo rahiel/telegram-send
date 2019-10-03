@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016-2018  Rahiel Kasim
+# Copyright (C) 2016-2019  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
+import configparser
 import re
 import sys
 from os import makedirs, remove
@@ -35,12 +36,6 @@ try:
     import readline
 except:
     pass
-
-if sys.version_info >= (3, ):
-    import configparser
-else:             # python 2.7
-    import ConfigParser as configparser
-    input = raw_input
 
 __all__ = ["configure", "send"]
 
@@ -173,9 +168,9 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
         raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    token = config.get("telegram", "token")
-    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
-
+    config = config["telegram"]
+    token = config["token"]
+    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
     request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
@@ -328,10 +323,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
-    config.add_section("telegram")
-    config.set("telegram", "TOKEN", token)
-    config.set("telegram", "chat_id", str(chat_id))
-    # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
+    config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     conf_dir = dirname(conf)
     if conf_dir:
         makedirs_check(conf_dir)
