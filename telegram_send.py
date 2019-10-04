@@ -22,7 +22,8 @@ import sys
 from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
 from random import randint
-from subprocess import CalledProcessError, check_output
+from shutil import which
+from subprocess import check_output
 from warnings import warn
 
 import colorama
@@ -185,7 +186,6 @@ def send(*,
         parse_mode = None
 
     if messages:
-
         def send_message(message):
             return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_notification=silent, disable_web_page_preview=disable_web_page_preview)
 
@@ -329,7 +329,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
     config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     conf_dir = dirname(conf)
     if conf_dir:
-        makedirs_check(conf_dir)
+        makedirs(conf_dir, exist_ok=True)
     with open(conf, "w") as f:
         config.write(f)
     if fm_integration:
@@ -364,7 +364,7 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
         filename = join(loc, name + ext)
         if not clean:
             if which(fm):
-                makedirs_check(loc)
+                makedirs(loc, exist_ok=True)
                 with open(filename, "w") as f:
                     if section == "script":
                         f.write(script)
@@ -375,13 +375,6 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
         else:
             if exists(filename):
                 remove(filename)
-
-
-def which(p):  # shutil.which in py 3.3+
-    try:
-        return check_output(["which", p]).decode("utf-8").strip().endswith(p)
-    except CalledProcessError:
-        return False
 
 
 def clean():
@@ -417,11 +410,6 @@ def pre(text):
 
 def get_config_path():
     return AppDirs("telegram-send").user_config_dir + ".conf"
-
-
-def makedirs_check(path):
-    if not exists(path):  # makedirs has "exist_ok" kw in py 3.2+
-        makedirs(path)
 
 
 def split_message(message, max_length):
