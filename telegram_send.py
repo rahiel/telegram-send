@@ -200,15 +200,21 @@ def send(*,
             else:
                 send_message(m)
 
+    def make_captions(items, captions):
+        captions += [None] * (len(items) - len(captions))  # make captions equal length when not all images/files have captions
+        return zip(items, captions)
+
     if files:
-        for f in files:
-            bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)
+        if captions:
+            for (f, c) in make_captions(files, captions):
+                bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)
+        else:
+            for f in files:
+                bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)
 
     if images:
         if captions:
-            # make captions equal length when not all images have captions
-            captions += [None] * (len(images) - len(captions))
-            for (i, c) in zip(images, captions):
+            for (i, c) in make_captions(images, captions):
                 bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)
         else:
             for i in images:

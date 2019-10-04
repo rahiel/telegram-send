@@ -31,7 +31,7 @@ can be easily called from other programs.
 
 To send a message:
 ``` shell
-telegram-send "hello, world"
+telegram-send "Hello, World!"
 ```
 There is a maximum message length of 4096 characters, larger messages will be
 automatically split up into smaller ones and sent separately.
@@ -59,14 +59,14 @@ printf 'With\nmultiple\nlines' | telegram-send --stdin
 ```
 With this option you can send the output of any program.
 
-To send a file (maximum file size of 50 MB):
+To send a file (maximum file size of 50 MB) with an optional caption:
 ``` shell
-telegram-send --file document.pdf
+telegram-send --file quran.pdf --caption "The Noble Qur'an"
 ```
 
-To send an image with an optional caption (maximum file size of 10 MB):
+To send an image (maximum file size of 10 MB) with an optional caption:
 ``` shell
-telegram-send --image photo.jpg --caption "The Moon at night"
+telegram-send --image moon.jpg --caption "The Moon at night"
 ```
 
 To send a location via latitude and longitude:
