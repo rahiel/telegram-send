@@ -60,6 +60,7 @@ def main():
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
@@ -114,6 +115,7 @@ def main():
             images=args.image,
             animations=args.animation,
             videos=args.video,
+            audios=args.audio,
             captions=args.caption,
             locations=args.location,
             timeout=args.timeout
@@ -136,7 +138,7 @@ def main():
 
 
 def send(*,
-         messages=None, files=None, images=None, animations=None, videos=None, captions=None, locations=None,
+         messages=None, files=None, images=None, animations=None, videos=None, audios=None, captions=None, locations=None,
          conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
@@ -164,7 +166,8 @@ def send(*,
     images (List[file]): The images to send.
     animations (List[file]): The animations to send.
     videos (List[file]): The videos to send.
-    captions (List[str]): The captions to send with the images/files or other media.
+    audios (List[file]): The audios to send.
+    captions (List[str]): The captions to send with the images/files/animations/videos or audios.
     locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
                            separated by whitespace or a comma.
     silent (bool): Send silently without sound.
@@ -241,6 +244,14 @@ def send(*,
         else:
             for v in videos:
                 bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)
+
+    if audios:
+        if captions:
+            for (a, c) in make_captions(audios, captions):
+                bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)
+        else:
+            for a in audios:
+                bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)
 
     if locations:
         it = iter(locations)

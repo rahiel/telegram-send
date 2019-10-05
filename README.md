@@ -79,7 +79,12 @@ telegram-send --animation kitty.gif --caption "🐱"
 
 To send an MP4 video (maximum file size of 50 MB) with an optional caption:
 ``` shell
-telegram-send --birds.mp4 --caption "Singing Birds"
+telegram-send --video birds.mp4 --caption "Singing Birds"
+```
+
+To send an mp3 audio file with an optional caption:
+``` shell
+telegram-send --audio "Pachelbel's Canon.mp3" --caption "Johann Pachelbel - Canon in D"
 ```
 
 To send a location via latitude and longitude:
