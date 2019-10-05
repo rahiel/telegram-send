@@ -66,12 +66,17 @@ telegram-send --file quran.pdf --caption "The Noble Qur'an"
 
 To send an image (maximum file size of 10 MB) with an optional caption:
 ``` shell
-telegram-send --image moon.jpg --caption "The Moon at night"
+telegram-send --image moon.jpg --caption "The Moon at Night"
 ```
 
-To send a GIF or a soundless H.264/MPEG-4 AVC video with an optional caption:
+To send a GIF or a soundless MP4 video (encoded as H.264/MPEG-4 AVC with a maximum file size of 50 MB) with an optional caption:
 ``` shell
 telegram-send --animation kitty.gif --caption "🐱"
+```
+
+To send an MP4 video (maximum file size of 50 MB) with an optional caption:
+``` shell
+telegram-send --birds.mp4 --caption "Singing Birds"
 ```
 
 To send a location via latitude and longitude:

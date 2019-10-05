@@ -59,6 +59,7 @@ def main():
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
@@ -112,6 +113,7 @@ def main():
             files=args.file,
             images=args.image,
             animations=args.animation,
+            videos=args.video,
             captions=args.caption,
             locations=args.location,
             timeout=args.timeout
@@ -134,7 +136,7 @@ def main():
 
 
 def send(*,
-         messages=None, files=None, images=None, animations=None, captions=None, locations=None,
+         messages=None, files=None, images=None, animations=None, videos=None, captions=None, locations=None,
          conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
@@ -161,6 +163,7 @@ def send(*,
     files (List[file]): The files to send.
     images (List[file]): The images to send.
     animations (List[file]): The animations to send.
+    videos (List[file]): The videos to send.
     captions (List[str]): The captions to send with the images/files or other media.
     locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
                            separated by whitespace or a comma.
@@ -230,6 +233,14 @@ def send(*,
         else:
             for a in animations:
                 bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)
+
+    if videos:
+        if captions:
+            for (v, c) in make_captions(videos, captions):
+                bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)
+        else:
+            for v in videos:
+                bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)
 
     if locations:
         it = iter(locations)
