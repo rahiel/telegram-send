@@ -69,6 +69,11 @@ To send an image (maximum file size of 10 MB) with an optional caption:
 telegram-send --image moon.jpg --caption "The Moon at night"
 ```
 
+To send a GIF or a soundless H.264/MPEG-4 AVC video with an optional caption:
+``` shell
+telegram-send --animation kitty.gif --caption "🐱"
+```
+
 To send a location via latitude and longitude:
 ``` shell
 telegram-send --location 35.5398033 -79.7488965
