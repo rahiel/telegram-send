@@ -9,7 +9,7 @@ Telegram-send is a command-line tool to send messages and files over Telegram to
 your account, to a group or to a channel. It provides a simple interface that
 can be easily called from other programs.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
 - [Usage](#usage)
@@ -23,6 +23,7 @@ can be easily called from other programs.
     - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
     - [How to use a proxy?](#how-to-use-a-proxy)
+    - [How to send the same message to multiple users?](#how-to-send-the-same-message-to-multiple-users)
 - [Uninstallation](#uninstallation)
 
 <!-- markdown-toc end -->
@@ -82,7 +83,7 @@ To send an MP4 video (maximum file size of 50 MB) with an optional caption:
 telegram-send --video birds.mp4 --caption "Singing Birds"
 ```
 
-To send an mp3 audio file with an optional caption:
+To send an audio file with an optional caption:
 ``` shell
 telegram-send --audio "Pachelbel's Canon.mp3" --caption "Johann Pachelbel - Canon in D"
 ```
@@ -257,6 +258,26 @@ pip3 install pysocks
 ```
 If you installed `telegram-send` with `sudo`, you also need to install `pysocks`
 with `sudo`.
+
+## How to send the same message to multiple users?
+
+First you configure telegram-send for every recipient you want to send messages to:
+``` shell
+telegram-send --config user1.conf --configure
+telegram-send --config group1.conf --configure-group
+telegram-send --config group2.conf --configure-group
+telegram-send --config channel1.conf --configure-channel
+```
+
+You will need all of the above config files. Now to send a message to all of the
+above configured recipients:
+``` shell
+telegram-send --config user1.conf \
+              --config group1.conf \
+              --config group2.conf \
+              --config channel1.conf \
+              "Multicasting!"
+```
 
 # Uninstallation
 

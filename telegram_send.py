@@ -63,7 +63,7 @@ def main():
     parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
-    parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
+    parser.add_argument("--config", help="specify configuration file", type=str, dest="conf", action="append")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
@@ -72,16 +72,18 @@ def main():
     args = parser.parse_args()
 
     if args.global_config:
-        conf = global_config
+        conf = [global_config]
+    elif args.conf is None:
+        conf = [None]
     else:
         conf = args.conf
 
     if args.configure:
-        return configure(conf, fm_integration=True)
+        return configure(conf[0], fm_integration=True)
     elif args.configure_channel:
-        return configure(conf, channel=True)
+        return configure(conf[0], channel=True)
     elif args.configure_group:
-        return configure(conf, group=True)
+        return configure(conf[0], group=True)
     elif args.file_manager:
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
@@ -100,26 +102,28 @@ def main():
             sys.exit(0)
         if args.pre:
             message = pre(message)
-        return send(messages=[message], conf=conf, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
+        for c in conf:
+            send(messages=[message], conf=conf, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
 
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
-        send(
-            messages=args.message,
-            conf=conf,
-            parse_mode=args.parse_mode,
-            silent=args.silent,
-            disable_web_page_preview=args.disable_web_page_preview,
-            files=args.file,
-            images=args.image,
-            animations=args.animation,
-            videos=args.video,
-            audios=args.audio,
-            captions=args.caption,
-            locations=args.location,
-            timeout=args.timeout
-        )
+        for c in conf:
+            send(
+                messages=args.message,
+                conf=c,
+                parse_mode=args.parse_mode,
+                silent=args.silent,
+                disable_web_page_preview=args.disable_web_page_preview,
+                files=args.file,
+                images=args.image,
+                animations=args.animation,
+                videos=args.video,
+                audios=args.audio,
+                captions=args.caption,
+                locations=args.location,
+                timeout=args.timeout
+            )
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
