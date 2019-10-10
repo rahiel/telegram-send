@@ -103,7 +103,7 @@ def main():
         if args.pre:
             message = pre(message)
         for c in conf:
-            send(messages=[message], conf=conf, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
+            send(messages=[message], conf=c, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
 
     try:
         if args.pre:
