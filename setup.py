@@ -23,7 +23,7 @@ setup(
     license="GPLv3+",
 
     python_requires=">=3.5",
-    py_modules=["telegram_send"],
+    py_modules=["telegram_send", "version"],
     install_requires=["python-telegram-bot>=12.1.1", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send:main"]},
 
