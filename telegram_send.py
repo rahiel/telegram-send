@@ -58,6 +58,7 @@ def main():
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
@@ -117,6 +118,7 @@ def main():
                 disable_web_page_preview=args.disable_web_page_preview,
                 files=args.file,
                 images=args.image,
+                stickers=args.sticker,
                 animations=args.animation,
                 videos=args.video,
                 audios=args.audio,
@@ -142,8 +144,8 @@ def main():
 
 
 def send(*,
-         messages=None, files=None, images=None, animations=None, videos=None, audios=None, captions=None, locations=None,
-         conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
+         messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None, captions=None,
+         locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -232,6 +234,10 @@ def send(*,
         else:
             for i in images:
                 bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)
+
+    if stickers:
+        for i in stickers:
+                bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)
 
     if animations:
         if captions:
