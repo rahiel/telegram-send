@@ -73,7 +73,7 @@ To send an image (maximum file size of 10 MB) with an optional caption:
 telegram-send --image moon.jpg --caption "The Moon at Night"
 ```
 
-To send a sticker (use `file_id` or downloaded sticker file):
+To send a sticker:
 ``` shell
 telegram-send --sticker sticker.webp
 ```
@@ -283,6 +283,11 @@ telegram-send --config user1.conf \
               --config channel1.conf \
               "Multicasting!"
 ```
+
+## How to get sticker files?
+
+In Telegram Desktop you right click a sticker and choose "Save Image As...". You
+can then send the saved `webp` file with `telegram-send --sticker sticker.webp`.
 
 # Uninstallation
 

@@ -144,8 +144,9 @@ def main():
 
 
 def send(*,
-         messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None, captions=None,
-         locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False, timeout=30):
+         messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
+         captions=None, locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False,
+         timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -170,6 +171,7 @@ def send(*,
     parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
+    stickers (List[file]): The stickers to send.
     animations (List[file]): The animations to send.
     videos (List[file]): The videos to send.
     audios (List[file]): The audios to send.
@@ -237,7 +239,7 @@ def send(*,
 
     if stickers:
         for i in stickers:
-                bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)
+            bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)
 
     if animations:
         if captions:
