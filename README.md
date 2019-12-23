@@ -9,7 +9,7 @@ Telegram-send is a command-line tool to send messages and files over Telegram to
 your account, to a group or to a channel. It provides a simple interface that
 can be easily called from other programs.
 
-<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-generate-toc again -->
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
 - [Usage](#usage)
@@ -23,6 +23,7 @@ can be easily called from other programs.
     - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
     - [How to use a proxy?](#how-to-use-a-proxy)
+    - [How to send the same message to multiple users?](#how-to-send-the-same-message-to-multiple-users)
 - [Uninstallation](#uninstallation)
 
 <!-- markdown-toc end -->
@@ -31,7 +32,7 @@ can be easily called from other programs.
 
 To send a message:
 ``` shell
-telegram-send "hello, world"
+telegram-send "Hello, World!"
 ```
 There is a maximum message length of 4096 characters, larger messages will be
 automatically split up into smaller ones and sent separately.
@@ -41,7 +42,10 @@ To send a message using Markdown or HTML formatting:
 telegram-send --format markdown "Only the *bold* use _italics_"
 telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> supported"
 ```
-For more information on supported formatting, see the [formatting documentation](https://core.telegram.org/bots/api#formatting-options).
+Note that not all Markdown syntax or all HTML tags are supported. For more
+information on supported formatting, see the [formatting options][].
+
+[formatting options]: https://core.telegram.org/bots/api#formatting-options
 
 The `--pre` flag formats messages as fixed-width text:
 ``` shell
@@ -59,14 +63,34 @@ printf 'With\nmultiple\nlines' | telegram-send --stdin
 ```
 With this option you can send the output of any program.
 
-To send a file (maximum file size of 50 MB):
+To send a file (maximum file size of 50 MB) with an optional caption:
 ``` shell
-telegram-send --file document.pdf
+telegram-send --file quran.pdf --caption "The Noble Qur'an"
 ```
 
-To send an image with an optional caption (maximum file size of 10 MB):
+To send an image (maximum file size of 10 MB) with an optional caption:
 ``` shell
-telegram-send --image photo.jpg --caption "The Moon at night"
+telegram-send --image moon.jpg --caption "The Moon at Night"
+```
+
+To send a sticker:
+``` shell
+telegram-send --sticker sticker.webp
+```
+
+To send a GIF or a soundless MP4 video (encoded as H.264/MPEG-4 AVC with a maximum file size of 50 MB) with an optional caption:
+``` shell
+telegram-send --animation kitty.gif --caption "🐱"
+```
+
+To send an MP4 video (maximum file size of 50 MB) with an optional caption:
+``` shell
+telegram-send --video birds.mp4 --caption "Singing Birds"
+```
+
+To send an audio file with an optional caption:
+``` shell
+telegram-send --audio "Pachelbel's Canon.mp3" --caption "Johann Pachelbel - Canon in D"
 ```
 
 To send a location via latitude and longitude:
@@ -239,6 +263,31 @@ pip3 install pysocks
 ```
 If you installed `telegram-send` with `sudo`, you also need to install `pysocks`
 with `sudo`.
+
+## How to send the same message to multiple users?
+
+First you configure telegram-send for every recipient you want to send messages to:
+``` shell
+telegram-send --config user1.conf --configure
+telegram-send --config group1.conf --configure-group
+telegram-send --config group2.conf --configure-group
+telegram-send --config channel1.conf --configure-channel
+```
+
+You will need all of the above config files. Now to send a message to all of the
+above configured recipients:
+``` shell
+telegram-send --config user1.conf \
+              --config group1.conf \
+              --config group2.conf \
+              --config channel1.conf \
+              "Multicasting!"
+```
+
+## How to get sticker files?
+
+In Telegram Desktop you right click a sticker and choose "Save Image As...". You
+can then send the saved `webp` file with `telegram-send --sticker sticker.webp`.
 
 # Uninstallation
 

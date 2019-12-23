@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016-2018  Rahiel Kasim
+# Copyright (C) 2016-2019  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
+import configparser
 import re
 import sys
 from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
-from exceptions import OSError
 from random import randint
-from subprocess import CalledProcessError, check_output
+from shutil import which
+from subprocess import check_output
 from warnings import warn
 
 import colorama
@@ -30,18 +31,13 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
+from version import __version__
+
 try:
     import readline
-except:
+except ImportError:
     pass
 
-if sys.version_info >= (3, ):
-    import configparser
-else:             # python 2.7
-    import ConfigParser as configparser
-    input = raw_input
-
-__version__ = "0.20"
 __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
@@ -56,16 +52,21 @@ def main():
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
     parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
+    parser.add_argument("--silent", help="send silently, user will receive a notification without sound", action="store_true")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
     parser.add_argument("--showids", help="show message ids (useful to cancel a message afterwards)", action="store_true")
     parser.add_argument("-d", "--delete", metavar="id", help="cancel messages by id (only last 48h), see --showids", nargs="+", type=int)
-    parser.add_argument("--config", help="specify configuration file", type=str, dest="conf")
+    parser.add_argument("--config", help="specify configuration file", type=str, dest="conf", action="append")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
@@ -74,16 +75,18 @@ def main():
     args = parser.parse_args()
 
     if args.global_config:
-        conf = global_config
+        conf = [global_config]
+    elif args.conf is None:
+        conf = [None]
     else:
         conf = args.conf
 
     if args.configure:
-        return configure(conf, fm_integration=True)
+        return configure(conf[0], fm_integration=True)
     elif args.configure_channel:
-        return configure(conf, channel=True)
+        return configure(conf[0], channel=True)
     elif args.configure_group:
-        return configure(conf, group=True)
+        return configure(conf[0], group=True)
     elif args.file_manager:
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
@@ -102,26 +105,34 @@ def main():
             sys.exit(0)
         if args.pre:
             message = pre(message)
-        return send(messages=[message], conf=conf, parse_mode=args.parse_mode, disable_web_page_preview=args.disable_web_page_preview)
+        for c in conf:
+            send(messages=[message], conf=c, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
 
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
         cancel(args.delete)
-        message_ids = send(
-            messages=args.message,
-            conf=conf,
-            parse_mode=args.parse_mode,
-            disable_web_page_preview=args.disable_web_page_preview,
-            files=args.file,
-            images=args.image,
-            captions=args.caption,
-            locations=args.location,
-            timeout=args.timeout
-        )
+        message_ids = []
+        for c in conf:
+            message_ids += send(
+                messages=args.message,
+                conf=c,
+                parse_mode=args.parse_mode,
+                silent=args.silent,
+                disable_web_page_preview=args.disable_web_page_preview,
+                files=args.file,
+                images=args.image,
+                stickers=args.sticker,
+                animations=args.animation,
+                videos=args.video,
+                audios=args.audio,
+                captions=args.caption,
+                locations=args.location,
+                timeout=args.timeout
+            )
         if args.showids and message_ids:
             smessage_ids = [str(m) for m in message_ids]
-            print "message_ids " + " ".join(smessage_ids)
+            print("message_ids " + " ".join(smessage_ids))
 
     except ConfigError as e:
         print(markup(str(e), "red"))
@@ -140,13 +151,14 @@ def main():
             raise(e)
 
 
-def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=False, files=None, images=None,
-         captions=None, locations=None, timeout=30):
+def send(*,
+         messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
+         captions=None, locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False,
+         timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
-    `send(messages=["Hello!"])` instead of `send(["Hello!"])` as the latter
-    will *break* when I change the order of the arguments.
+    `send(messages=["Hello!"])` instead of `send(["Hello!"])`.
 
     The `file` type is the [file object][] returned by the `open()` function.
     To send an image/file you open it in binary mode:
@@ -165,12 +177,17 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
                 `~` expands to user's home directory.
     messages (List[str]): The messages to send.
     parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
-    disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
-    captions (List[str]): The captions to send with the images.
+    stickers (List[file]): The stickers to send.
+    animations (List[file]): The animations to send.
+    videos (List[file]): The videos to send.
+    audios (List[file]): The audios to send.
+    captions (List[str]): The captions to send with the images/files/animations/videos or audios.
     locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
                            separated by whitespace or a comma.
+    silent (bool): Send silently without sound.
+    disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     timeout (int|float): The read timeout for network connections in seconds.
     """
     conf = expanduser(conf) if conf else get_config_path()
@@ -180,9 +197,9 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
         raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    token = config.get("telegram", "token")
-    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
-
+    config = config["telegram"]
+    token = config["token"]
+    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
     request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
@@ -197,9 +214,8 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
     message_ids = []
 
     if messages:
-
         def send_message(message):
-            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_web_page_preview=disable_web_page_preview)
+            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_notification=silent, disable_web_page_preview=disable_web_page_preview)
 
         for m in messages:
             if len(m) > MAX_MESSAGE_LENGTH:
@@ -212,19 +228,53 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
             else:
                 message_ids += [send_message(m)["message_id"]]
 
+    def make_captions(items, captions):
+        captions += [None] * (len(items) - len(captions))  # make captions equal length when not all images/files have captions
+        return zip(items, captions)
+
     if files:
-        for f in files:
-            message_ids += [bot.send_document(chat_id=chat_id, document=f)]
+        if captions:
+            for (f, c) in make_captions(files, captions):
+                message_ids += [bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)]
+        else:
+            for f in files:
+                message_ids += [bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)]
 
     if images:
         if captions:
-            # make captions equal length when not all images have captions
-            captions += [None] * (len(images) - len(captions))
-            for (i, c) in zip(images, captions):
-                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, caption=c)["message_id"]]
+            for (i, c) in make_captions(images, captions):
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)]
         else:
             for i in images:
-                message_ids += [bot.send_photo(chat_id=chat_id, photo=i)["message_id"]]
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)]
+
+    if stickers:
+        for i in stickers:
+            message_ids += [bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)]
+
+    if animations:
+        if captions:
+            for (a, c) in make_captions(animations, captions):
+                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent)]
+        else:
+            for a in animations:
+                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)]
+
+    if videos:
+        if captions:
+            for (v, c) in make_captions(videos, captions):
+                message_ids += [bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)]
+        else:
+            for v in videos:
+                message_ids += [bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)]
+
+    if audios:
+        if captions:
+            for (a, c) in make_captions(audios, captions):
+                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)]
+        else:
+            for a in audios:
+                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)]
 
     if locations:
         it = iter(locations)
@@ -234,7 +284,7 @@ def send(messages=None, conf=None, parse_mode=None, disable_web_page_preview=Fal
             else:
                 lat = loc
                 lon = next(it)
-            message_ids += [bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon))["message_id"]]
+            message_ids += [bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon), disable_notification=silent)]
 
     return message_ids
 
@@ -374,13 +424,10 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
-    config.add_section("telegram")
-    config.set("telegram", "TOKEN", token)
-    config.set("telegram", "chat_id", str(chat_id))
-    # above 3 lines in py3: config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
+    config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     conf_dir = dirname(conf)
     if conf_dir:
-        makedirs_check(conf_dir)
+        makedirs(conf_dir, exist_ok=True)
     with open(conf, "w") as f:
         config.write(f)
     if fm_integration:
@@ -415,7 +462,7 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
         filename = join(loc, name + ext)
         if not clean:
             if which(fm):
-                makedirs_check(loc)
+                makedirs(loc, exist_ok=True)
                 with open(filename, "w") as f:
                     if section == "script":
                         f.write(script)
@@ -426,13 +473,6 @@ echo "$NAUTILUS_SCRIPT_SELECTED_FILE_PATHS" | sed 's/ /\\\\ /g' | xargs telegram
         else:
             if exists(filename):
                 remove(filename)
-
-
-def which(p):  # shutil.which in py 3.3+
-    try:
-        return check_output(["which", p]).decode("utf-8").strip().endswith(p)
-    except CalledProcessError:
-        return False
 
 
 def clean():
@@ -468,11 +508,6 @@ def pre(text):
 
 def get_config_path():
     return AppDirs("telegram-send").user_config_dir + ".conf"
-
-
-def makedirs_check(path):
-    if not exists(path):  # makedirs has "exist_ok" kw in py 3.2+
-        makedirs(path)
 
 
 def split_message(message, max_length):
