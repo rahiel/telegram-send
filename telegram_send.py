@@ -326,7 +326,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
             print("\nOpen https://web.telegram.org in your browser, sign in and open your private channel."
                   "\nNow copy the URL in the address bar and enter it here:")
             url = input(markup(prompt, "magenta")).strip()
-            chat_id = "-100" + re.match(".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
+            chat_id = "-100" + re.match(".+web\.(telegram|tlgr)\.org\/#\/im\?p=c(\d+)", url).group(2)
 
         authorized = False
         while not authorized:
