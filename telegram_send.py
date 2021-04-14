@@ -47,8 +47,8 @@ def main():
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
     parser.add_argument("message", help="message(s) to send", nargs="*")
-    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "html"],
-                        help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
+    parser.add_argument("--format", default="text", dest="parse_mode", choices=["text", "markdown", "markdownV2", "html"],
+                        help="How to format the message(s). Choose from 'text', 'markdown', 'markdownV2', or 'html'")
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
     parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
@@ -168,7 +168,7 @@ def send(*,
     conf (str): Path of configuration file to use. Will use the default config if not specified.
                 `~` expands to user's home directory.
     messages (List[str]): The messages to send.
-    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
+    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "markdownV2", "html"]`.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
     stickers (List[file]): The stickers to send.
