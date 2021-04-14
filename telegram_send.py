@@ -224,46 +224,46 @@ def send(*,
     if files:
         if captions:
             for (f, c) in make_captions(files, captions):
-                bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)
+                bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
         else:
             for f in files:
-                bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)
+                bot.send_document(chat_id=chat_id, document=f, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)
+                bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
         else:
             for i in images:
-                bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)
+                bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if stickers:
         for i in stickers:
-            bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)
+            bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent)
+                bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
         else:
             for a in animations:
-                bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)
+                bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)
+                bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
         else:
             for v in videos:
-                bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)
+                bot.send_video(chat_id=chat_id, video=v, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if audios:
         if captions:
             for (a, c) in make_captions(audios, captions):
-                bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)
+                bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
         else:
             for a in audios:
-                bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)
+                bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent, reply_to_message_id=None, reply_markup=None, timeout=timeout)
 
     if locations:
         it = iter(locations)
