@@ -232,7 +232,7 @@ def send(*,
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)
+                bot.send_photo(chat_id=chat_id, photo=i, caption=c, parse_mode=parse_mode, disable_notification=silent)
         else:
             for i in images:
                 bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)

@@ -68,10 +68,11 @@ To send a file (maximum file size of 50 MB) with an optional caption:
 telegram-send --file quran.pdf --caption "The Noble Qur'an"
 ```
 
-To send an image (maximum file size of 10 MB) with an optional caption:
+To send an image (maximum file size of 10 MB) with an optional caption and optional formatting:
 ``` shell
-telegram-send --image moon.jpg --caption "The Moon at Night"
+telegram-send --image moon.jpg --caption "<b>The Moon at Night</b>" --format html
 ```
+Both HTML and Markdown are supported for caption formatting
 
 To send a sticker:
 ``` shell
