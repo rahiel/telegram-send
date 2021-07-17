@@ -143,6 +143,31 @@ def main():
             raise(e)
 
 
+def get_config(conf):
+    """Get config from config file or from dict."""
+    if isinstance(conf, dict):
+        try:
+            return conf['token'], conf['chat_id']
+        except KeyError as e:
+            raise ConfigError("Missing options in config dict: {}".format(e))
+    elif isinstance(conf, str):
+        conf = expanduser(conf)
+    else:
+        conf = get_config_path()
+
+    config = configparser.ConfigParser()
+    if not config.read(conf) or not config.has_section("telegram"):
+        raise ConfigError("Config not found")
+    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
+    if len(missing_options) > 0:
+        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+    config = config["telegram"]
+    token = config["token"]
+    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
+
+    return token, chat_id
+
+
 def send(*,
          messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
          captions=None, locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False,
@@ -182,16 +207,7 @@ def send(*,
     disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     timeout (int|float): The read timeout for network connections in seconds.
     """
-    conf = expanduser(conf) if conf else get_config_path()
-    config = configparser.ConfigParser()
-    if not config.read(conf) or not config.has_section("telegram"):
-        raise ConfigError("Config not found")
-    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
-    if len(missing_options) > 0:
-        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    config = config["telegram"]
-    token = config["token"]
-    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
+    token, chat_id = get_config(conf)
     request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
