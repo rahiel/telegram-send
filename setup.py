@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 from setuptools import setup
 
-from version import __version__
-
+from telegram_send.version import __version__
 
 try:
     import pypandoc
@@ -23,7 +22,7 @@ setup(
     license="GPLv3+",
 
     python_requires=">=3.5",
-    py_modules=["telegram_send", "version"],
+    packages=['telegram_send'],
     install_requires=["python-telegram-bot>=12.1.1", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send:main"]},
 
