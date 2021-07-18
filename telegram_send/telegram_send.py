@@ -31,7 +31,7 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 from appdirs import AppDirs
 
-from version import __version__
+from .version import __version__
 
 try:
     import readline
