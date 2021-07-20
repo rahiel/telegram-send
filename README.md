@@ -208,6 +208,17 @@ directly from other Python programs: `import telegram_send`. Look at the
 
 [documentation]: https://www.rahielkasim.com/telegram-send/docs/api/
 
+```python
+from telegram_send import send
+
+config = {
+  'token': 'your_bot_token_here',
+  'chat_id': 'chat_id_here',
+}
+
+send(messages=['Some text here'], conf=config)
+```
+
 ## Cron job output
 
 Cron has a built-in feature to send the output of jobs via mail. In this example
