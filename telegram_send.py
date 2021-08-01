@@ -324,9 +324,13 @@ def configure(conf, channel=False, group=False, fm_integration=False):
                 chat_id = "@" + chat_id
         else:
             print("\nOpen https://web.telegram.org in your browser, sign in and open your private channel."
+                  "\nMake sure you switch to the old version of Web Telegram in the menu before copying the URL"
                   "\nNow copy the URL in the address bar and enter it here:")
             url = input(markup(prompt, "magenta")).strip()
-            chat_id = "-100" + re.match(".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
+            try:
+                chat_id = "-100" + re.match(".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
+            except AttributeError:
+                chat_id = "-100" + re.match(".+web\.telegram\.org\/\?legacy=1#\/im\?p=c(\d+)", url).group(1)
 
         authorized = False
         while not authorized:
