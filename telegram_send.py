@@ -25,6 +25,7 @@ from random import randint
 from shutil import which
 from subprocess import check_output
 from warnings import warn
+from time import sleep
 
 import colorama
 import telegram
@@ -69,6 +70,7 @@ def main():
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
     parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
+    parser.add_argument("--delay", help="Set the delay between messages. (in seconds)", type=float, default=0.)
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
@@ -104,7 +106,7 @@ def main():
         if args.pre:
             message = pre(message)
         for c in conf:
-            send(messages=[message], conf=c, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
+            send(messages=[message], conf=c, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview, delay=args.delay)
 
     try:
         if args.pre:
@@ -124,7 +126,8 @@ def main():
                 audios=args.audio,
                 captions=args.caption,
                 locations=args.location,
-                timeout=args.timeout
+                timeout=args.timeout,
+                delay=args.delay
             )
     except ConfigError as e:
         print(markup(str(e), "red"))
@@ -146,7 +149,7 @@ def main():
 def send(*,
          messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
          captions=None, locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False,
-         timeout=30):
+         timeout=30,delay=0):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -181,6 +184,7 @@ def send(*,
     silent (bool): Send silently without sound.
     disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     timeout (int|float): The read timeout for network connections in seconds.
+    delay (int|float): The delay(in seconds) between messages sending to avoid Telegram flood limits violation.
     """
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
@@ -211,10 +215,12 @@ def send(*,
                 warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
+                    sleep(delay)
                     send_message(m)
             elif len(m) == 0:
                 continue
             else:
+                sleep(delay)
                 send_message(m)
 
     def make_captions(items, captions):
