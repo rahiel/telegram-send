@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+telegram-send = {editable = true, path = "."}
+
+[dev-packages]
+mypy = "*"
+flake8 = "*"
+twine = "*"
+wheel = "*"
+pydoc-markdown = "*"
+
+[requires]
+python_version = "3.9"

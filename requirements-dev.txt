@@ -1,3 +1,0 @@
-pydoc-markdown
-twine
-wheel
