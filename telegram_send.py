@@ -64,11 +64,13 @@ def main():
     parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
+    parser.add_argument("--showids", help="show message ids (useful to cancel a message afterwards)", action="store_true")
+    parser.add_argument("-d", "--delete", metavar="id", help="cancel messages by id (only last 48h), see --showids", nargs="+", type=int)
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf", action="append")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
-    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30.)
+    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30., action="store")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
@@ -109,8 +111,10 @@ def main():
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
+        cancel(args.delete)
+        message_ids = []
         for c in conf:
-            send(
+            message_ids += send(
                 messages=args.message,
                 conf=c,
                 parse_mode=args.parse_mode,
@@ -126,6 +130,10 @@ def main():
                 locations=args.location,
                 timeout=args.timeout
             )
+        if args.showids and message_ids:
+            smessage_ids = [str(m) for m in message_ids]
+            print("message_ids " + " ".join(smessage_ids))
+
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
@@ -202,6 +210,9 @@ def send(*,
     if parse_mode == "text":
         parse_mode = None
 
+    # collcet all message ids sent during the current invokation
+    message_ids = []
+
     if messages:
         def send_message(message):
             return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_notification=silent, disable_web_page_preview=disable_web_page_preview)
@@ -211,11 +222,11 @@ def send(*,
                 warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
-                    send_message(m)
+                    message_ids += [send_message(m)["message_id"]]
             elif len(m) == 0:
                 continue
             else:
-                send_message(m)
+                message_ids += [send_message(m)["message_id"]]
 
     def make_captions(items, captions):
         captions += [None] * (len(items) - len(captions))  # make captions equal length when not all images/files have captions
@@ -224,46 +235,46 @@ def send(*,
     if files:
         if captions:
             for (f, c) in make_captions(files, captions):
-                bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)
+                message_ids += [bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)]
         else:
             for f in files:
-                bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)
+                message_ids += [bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)]
 
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)]
         else:
             for i in images:
-                bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)
+                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)]
 
     if stickers:
         for i in stickers:
-            bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)
+            message_ids += [bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)]
 
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent)
+                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent)]
         else:
             for a in animations:
-                bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)
+                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)]
 
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)
+                message_ids += [bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)]
         else:
             for v in videos:
-                bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)
+                message_ids += [bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)]
 
     if audios:
         if captions:
             for (a, c) in make_captions(audios, captions):
-                bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)
+                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)]
         else:
             for a in audios:
-                bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)
+                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)]
 
     if locations:
         it = iter(locations)
@@ -273,8 +284,44 @@ def send(*,
             else:
                 lat = loc
                 lon = next(it)
-            bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon), disable_notification=silent)
+            message_ids += [bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon), disable_notification=silent)]
 
+    return message_ids
+
+
+def cancel(message_ids, conf=None, timeout=30):
+    """Cancel messages that have been sent before over Telegram. Restrictions given by Telegram API apply.
+
+    Note that Telegram restricts this to messages which have been sent during the last 48 hours.
+    https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html#telegram.Bot.delete_message
+
+    # Arguments
+
+    message_ids (List[str]): The messages ids of all messages to be deleted.
+    conf (str): Path of configuration file to use. Will use the default config if not specified.
+                `~` expands to user's home directory.
+    timeout (int|float): The read timeout for network connections in seconds.    
+    """
+
+    conf = expanduser(conf) if conf else get_config_path()
+    config = configparser.ConfigParser()
+    if not config.read(conf) or not config.has_section("telegram"):
+        raise ConfigError("Config not found")
+    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
+    if len(missing_options) > 0:
+        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+    token = config.get("telegram", "token")
+    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
+
+    request = telegram.utils.request.Request(read_timeout=timeout)
+    bot = telegram.Bot(token, request=request)
+
+    if message_ids:
+        for m in message_ids:
+            try:
+                bot.delete_message(chat_id=chat_id, message_id=m, timeout=timeout)
+            except telegram.TelegramError as e:
+                warn(markup("Cancelling message id#%d failed: %s" % (m, str(e)) , "red"))
 
 def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
@@ -305,7 +352,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         bot_name = bot.get_me().username
     except:
         print(markup("Something went wrong, please try again.\n", "red"))
-        return configure()
+        return configure(conf, channel=channel, group=group, fm_integration=fm_integration)
 
     print("Connected with {}.\n".format(markup(bot_name, "cyan")))
 
@@ -436,7 +483,7 @@ def clean():
     if exists(global_config):
         try:
             remove(global_config)
-        except PermissionError:
+        except OSError:
             print(markup("Can't delete /etc/telegram-send.conf", "red"))
             print("Please run: " + markup("sudo telegram-send --clean", "bold"))
             sys.exit(1)
