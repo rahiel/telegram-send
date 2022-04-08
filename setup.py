@@ -4,21 +4,15 @@ from setuptools import setup
 from version import __version__
 
 
-try:
-    import pypandoc
-    import re
-    long_description = pypandoc.convert("README.md", "rst")
-    # remove raw html blocks, they're not supported on pypi
-    long_description = re.sub("\s+\.\. raw:: html\s*.+? -->", "", long_description, count=2)
-except:
-    long_description = ""
-
+with open("README.md") as f:
+    long_description = f.read()
 
 setup(
     name="telegram-send",
     version=__version__,
     description="Send messages and files over Telegram from the command-line.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/rahiel/telegram-send",
     license="GPLv3+",
 

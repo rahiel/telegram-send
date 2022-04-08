@@ -3,11 +3,9 @@ set -euo pipefail
 
 
 echo "Running in $VIRTUAL_ENV"
-python3 -c 'import pypandoc'
 
 rm -rf dist/
-python3 setup.py sdist             # source distribution
-python3 setup.py bdist_wheel       # built package
+python setup.py sdist bdist_wheel  # source distribution and built package
 
 read -s -p "Password: " password
 printf "\n"
