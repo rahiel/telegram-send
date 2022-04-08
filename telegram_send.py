@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016-2019  Rahiel Kasim
+# Copyright (C) 2016-2022  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -64,8 +64,8 @@ def main():
     parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
-    parser.add_argument("--showids", help="show message ids (useful to cancel a message afterwards)", action="store_true")
-    parser.add_argument("-d", "--delete", metavar="id", help="cancel messages by id (only last 48h), see --showids", nargs="+", type=int)
+    parser.add_argument("--showids", help="show message ids, used to delete messages after they're sent", action="store_true")
+    parser.add_argument("-d", "--delete", metavar="id", help="delete sent messages by id (only last 48h), see --showids", nargs="+", type=int)
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf", action="append")
     parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
@@ -111,7 +111,7 @@ def main():
     try:
         if args.pre:
             args.message = [pre(m) for m in args.message]
-        cancel(args.delete)
+        delete(args.delete)
         message_ids = []
         for c in conf:
             message_ids += send(
@@ -210,7 +210,7 @@ def send(*,
     if parse_mode == "text":
         parse_mode = None
 
-    # collcet all message ids sent during the current invokation
+    # collect all message ids sent during the current invokation
     message_ids = []
 
     if messages:
@@ -289,8 +289,8 @@ def send(*,
     return message_ids
 
 
-def cancel(message_ids, conf=None, timeout=30):
-    """Cancel messages that have been sent before over Telegram. Restrictions given by Telegram API apply.
+def delete(message_ids, conf=None, timeout=30):
+    """Delete messages that have been sent before over Telegram. Restrictions given by Telegram API apply.
 
     Note that Telegram restricts this to messages which have been sent during the last 48 hours.
     https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html#telegram.Bot.delete_message
@@ -300,7 +300,7 @@ def cancel(message_ids, conf=None, timeout=30):
     message_ids (List[str]): The messages ids of all messages to be deleted.
     conf (str): Path of configuration file to use. Will use the default config if not specified.
                 `~` expands to user's home directory.
-    timeout (int|float): The read timeout for network connections in seconds.    
+    timeout (int|float): The read timeout for network connections in seconds.
     """
 
     conf = expanduser(conf) if conf else get_config_path()
@@ -321,7 +321,7 @@ def cancel(message_ids, conf=None, timeout=30):
             try:
                 bot.delete_message(chat_id=chat_id, message_id=m, timeout=timeout)
             except telegram.TelegramError as e:
-                warn(markup("Cancelling message id#%d failed: %s" % (m, str(e)) , "red"))
+                warn(markup("Deleting message id#%d failed: %s" % (m, str(e)) , "red"))
 
 def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
