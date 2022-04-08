@@ -31,7 +31,7 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 
 from version import __version__
-from utils import pre, split_message, get_config_path, markup
+from .utils import pre, split_message, get_config_path, markup
 
 try:
     import readline
@@ -42,6 +42,7 @@ __all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
 
+
 def main():
     colorama.init()
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
@@ -51,26 +52,36 @@ def main():
                         help="How to format the message(s). Choose from 'text', 'markdown', or 'html'")
     parser.add_argument("--stdin", help="Send text from stdin.", action="store_true")
     parser.add_argument("--pre", help="Send preformatted fixed-width (monospace) text.", action="store_true")
-    parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)", action="store_true")
-    parser.add_argument("--silent", help="send silently, user will receive a notification without sound", action="store_true")
+    parser.add_argument("--disable-web-page-preview", help="disable link previews in the message(s)",
+                        action="store_true")
+    parser.add_argument("--silent", help="send silently, user will receive a notification without sound",
+                        action="store_true")
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
     parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)",
+                        nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
     parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("-l", "--location", help="send location(s) via latitude and longitude (separated by whitespace or a comma)", nargs="+")
+    parser.add_argument("-l", "--location",
+                        help="send location(s) via latitude and longitude (separated by whitespace or a comma)",
+                        nargs="+")
     parser.add_argument("--caption", help="caption for image(s)", nargs="+")
-    parser.add_argument("--showids", help="show message ids, used to delete messages after they're sent", action="store_true")
-    parser.add_argument("-d", "--delete", metavar="id", help="delete sent messages by id (only last 48h), see --showids", nargs="+", type=int)
+    parser.add_argument("--showids", help="show message ids, used to delete messages after they're sent",
+                        action="store_true")
+    parser.add_argument("-d", "--delete", metavar="id",
+                        help="delete sent messages by id (only last 48h), see --showids",
+                        nargs="+", type=int)
     parser.add_argument("--config", help="specify configuration file", type=str, dest="conf", action="append")
-    parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf", action="store_true")
+    parser.add_argument("-g", "--global-config", help="Use the global configuration at /etc/telegram-send.conf",
+                        action="store_true")
     parser.add_argument("--file-manager", help="Integrate %(prog)s in the file manager", action="store_true")
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
-    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)", type=float, default=30., action="store")
+    parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)",
+                        type=float, default=30., action="store")
     parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
     args = parser.parse_args()
 
@@ -106,7 +117,13 @@ def main():
         if args.pre:
             message = pre(message)
         for c in conf:
-            send(messages=[message], conf=c, parse_mode=args.parse_mode, silent=args.silent, disable_web_page_preview=args.disable_web_page_preview)
+            send(
+                messages=[message],
+                conf=c,
+                parse_mode=args.parse_mode,
+                silent=args.silent,
+                disable_web_page_preview=args.disable_web_page_preview
+            )
 
     try:
         if args.pre:
@@ -215,11 +232,19 @@ def send(*,
 
     if messages:
         def send_message(message):
-            return bot.send_message(chat_id=chat_id, text=message, parse_mode=parse_mode, disable_notification=silent, disable_web_page_preview=disable_web_page_preview)
+            return bot.send_message(
+                chat_id=chat_id,
+                text=message,
+                parse_mode=parse_mode,
+                disable_notification=silent,
+                disable_web_page_preview=disable_web_page_preview
+            )
 
         for m in messages:
             if len(m) > MAX_MESSAGE_LENGTH:
-                warn(markup("Message longer than MAX_MESSAGE_LENGTH=%d, splitting into smaller messages." % MAX_MESSAGE_LENGTH, "red"))
+                warn(markup(
+                    f"Message longer than MAX_MESSAGE_LENGTH={MAX_MESSAGE_LENGTH}, splitting into smaller messages.",
+                    "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
                     message_ids += [send_message(m)["message_id"]]
@@ -229,7 +254,8 @@ def send(*,
                 message_ids += [send_message(m)["message_id"]]
 
     def make_captions(items, captions):
-        captions += [None] * (len(items) - len(captions))  # make captions equal length when not all images/files have captions
+        # make captions equal length when not all images/files have captions
+        captions += [None] * (len(items) - len(captions))
         return zip(items, captions)
 
     if files:
@@ -255,7 +281,10 @@ def send(*,
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, caption=c, disable_notification=silent)]
+                message_ids += [bot.send_animation(chat_id=chat_id,
+                                                   animation=a,
+                                                   caption=c,
+                                                   disable_notification=silent)]
         else:
             for a in animations:
                 message_ids += [bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)]
@@ -284,7 +313,10 @@ def send(*,
             else:
                 lat = loc
                 lon = next(it)
-            message_ids += [bot.send_location(chat_id=chat_id, latitude=float(lat), longitude=float(lon), disable_notification=silent)]
+            message_ids += [bot.send_location(chat_id=chat_id,
+                                              latitude=float(lat),
+                                              longitude=float(lon),
+                                              disable_notification=silent)]
 
     return message_ids
 
@@ -321,7 +353,8 @@ def delete(message_ids, conf=None, timeout=30):
             try:
                 bot.delete_message(chat_id=chat_id, message_id=m, timeout=timeout)
             except telegram.TelegramError as e:
-                warn(markup("Deleting message id#%d failed: %s" % (m, str(e)) , "red"))
+                warn(markup(f"Deleting message with id={m} failed: {e}", "red"))
+
 
 def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
@@ -350,7 +383,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
     try:
         bot = telegram.Bot(token)
         bot_name = bot.get_me().username
-    except:
+    except Exception:
         print(markup("Something went wrong, please try again.\n", "red"))
         return configure(conf, channel=channel, group=group, fm_integration=fm_integration)
 
@@ -373,7 +406,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
             print("\nOpen https://web.telegram.org in your browser, sign in and open your private channel."
                   "\nNow copy the URL in the address bar and enter it here:")
             url = input(markup(prompt, "magenta")).strip()
-            chat_id = "-100" + re.match(".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
+            chat_id = "-100" + re.match(r".+web\.telegram\.org\/#\/im\?p=c(\d+)", url).group(1)
 
         authorized = False
         while not authorized:

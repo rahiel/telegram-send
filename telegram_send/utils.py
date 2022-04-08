@@ -1,3 +1,4 @@
+import sys
 from typing import List
 
 from appdirs import AppDirs
@@ -8,11 +9,13 @@ def markup(text: str, style: str) -> str:
                   "cyan": "\033[36m", "magenta": "\033[35m"}
     return ansi_codes[style] + text + "\033[0m"
 
+
 def pre(text: str) -> str:
     if "```" in text:
         print(markup("Sending a message containing ``` is not supported with --pre.", "red"))
         sys.exit(1)
     return "```text\n" + text + "```"
+
 
 def split_message(message: str, max_length: int) -> List[str]:
     """Split large message into smaller messages each smaller than the max_length."""
@@ -23,6 +26,6 @@ def split_message(message: str, max_length: int) -> List[str]:
     ms.append(message)
     return ms
 
+
 def get_config_path():
     return AppDirs("telegram-send").user_config_dir + ".conf"
-
