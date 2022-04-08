@@ -11,7 +11,7 @@ mypy = "*"
 flake8 = "*"
 twine = "*"
 wheel = "*"
-pydoc-markdown = "*"
+pydoc-markdown = "==2.1.3"
 
 [requires]
 python_version = "3.9"

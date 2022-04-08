@@ -38,7 +38,6 @@ try:
 except ImportError:
     pass
 
-__all__ = ["configure", "send"]
 
 global_config = "/etc/telegram-send.conf"
 
