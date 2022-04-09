@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+import re
 from setuptools import setup
 
-from version import __version__
-
+with open("telegram_send/version.py") as f:
+    __version__ = re.search('"(.+)"', f.read()).group(1)
 
 with open("README.md") as f:
     long_description = f.read()
@@ -17,7 +18,7 @@ setup(
     license="GPLv3+",
 
     python_requires=">=3.6",
-    py_modules=["telegram_send", "version"],
+    packages=["telegram_send"],
     install_requires=["python-telegram-bot>=12.1.1", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send.telegram_send:main"]},
 

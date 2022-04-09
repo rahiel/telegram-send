@@ -5,7 +5,7 @@ set -euo pipefail
 echo "Running in $VIRTUAL_ENV"
 echo "Server IP: $server_ip"
 
-rm -rf dist/
+rm -rf dist/ build/
 python setup.py sdist bdist_wheel  # source distribution and built package
 
 read -s -p "Password: " password

@@ -31,7 +31,7 @@ import colorama
 import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 
-from version import __version__
+from .version import __version__
 from .utils import pre, split_message, get_config_path, markup
 
 try:
@@ -528,7 +528,6 @@ def get_config_settings(conf=None) -> Settings:
     chat_id = config.get("telegram", "chat_id")
     if chat_id.isdigit():
         chat_id = int(chat_id)
-    chat_id = int(chat_id) if chat_id.isdigit() else chat_id
     return Settings(token=token, chat_id=chat_id)
 
 
