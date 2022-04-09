@@ -41,9 +41,11 @@ To send a message using Markdown or HTML formatting:
 ```shell
 telegram-send --format markdown "Only the *bold* use _italics_"
 telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> supported"
+telegram-send --format markdown "||Do good and find good!||"
 ```
 Note that not all Markdown syntax or all HTML tags are supported. For more
-information on supported formatting, see the [formatting options][].
+information on supported formatting, see the [formatting options][]. We use the
+MarkdownV2 style for Markdown.
 
 [formatting options]: https://core.telegram.org/bots/api#formatting-options
 

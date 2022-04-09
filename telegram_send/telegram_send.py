@@ -110,6 +110,10 @@ def main():
     if args.pre:
         args.parse_mode = "markdown"
 
+    if args.parse_mode == "markdown":
+        # Use the improved MarkdownV2 format by default
+        args.parse_mode = telegram.constants.PARSEMODE_MARKDOWN_V2
+
     if args.stdin:
         message = sys.stdin.read()
         if len(message) == 0:
