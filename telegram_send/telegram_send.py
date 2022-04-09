@@ -122,7 +122,8 @@ def main():
                 conf=c,
                 parse_mode=args.parse_mode,
                 silent=args.silent,
-                disable_web_page_preview=args.disable_web_page_preview
+                disable_web_page_preview=args.disable_web_page_preview,
+                timeout=args.timeout,
             )
 
     try:
@@ -210,8 +211,7 @@ def send(*,
     settings = get_config_settings(conf)
     token = settings.token
     chat_id = settings.chat_id
-    request = telegram.utils.request.Request(read_timeout=timeout)
-    bot = telegram.Bot(token, request=request)
+    bot = telegram.Bot(token)
 
     # We let the user specify "text" as a parse mode to be more explicit about
     # the lack of formatting applied to the message, but "text" isn't a supported
@@ -226,6 +226,7 @@ def send(*,
     kwargs = {
         "chat_id": chat_id,
         "disable_notification": silent,
+        "timeout": timeout,
     }
 
     if messages:
@@ -330,8 +331,7 @@ def delete(message_ids, conf=None, timeout=30):
     settings = get_config_settings(conf)
     token = settings.token
     chat_id = settings.chat_id
-    request = telegram.utils.request.Request(read_timeout=timeout)
-    bot = telegram.Bot(token, request=request)
+    bot = telegram.Bot(token)
 
     if message_ids:
         for m in message_ids:
