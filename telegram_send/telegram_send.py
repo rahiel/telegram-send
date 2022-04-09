@@ -220,17 +220,21 @@ def send(*,
     if parse_mode == "text":
         parse_mode = None
 
-    # collect all message ids sent during the current invokation
+    # collect all message ids sent during the current invocation
     message_ids = []
+
+    kwargs = {
+        "chat_id": chat_id,
+        "disable_notification": silent,
+    }
 
     if messages:
         def send_message(message):
             return bot.send_message(
-                chat_id=chat_id,
                 text=message,
                 parse_mode=parse_mode,
-                disable_notification=silent,
-                disable_web_page_preview=disable_web_page_preview
+                disable_web_page_preview=disable_web_page_preview,
+                **kwargs
             )
 
         for m in messages:
@@ -254,49 +258,46 @@ def send(*,
     if files:
         if captions:
             for (f, c) in make_captions(files, captions):
-                message_ids += [bot.send_document(chat_id=chat_id, document=f, caption=c, disable_notification=silent)]
+                message_ids += [bot.send_document(document=f, caption=c, **kwargs)]
         else:
             for f in files:
-                message_ids += [bot.send_document(chat_id=chat_id, document=f, disable_notification=silent)]
+                message_ids += [bot.send_document(document=f, **kwargs)]
 
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, caption=c, disable_notification=silent)]
+                message_ids += [bot.send_photo(photo=i, caption=c, **kwargs)]
         else:
             for i in images:
-                message_ids += [bot.send_photo(chat_id=chat_id, photo=i, disable_notification=silent)]
+                message_ids += [bot.send_photo(photo=i, **kwargs)]
 
     if stickers:
         for i in stickers:
-            message_ids += [bot.send_sticker(chat_id=chat_id, sticker=i, disable_notification=silent)]
+            message_ids += [bot.send_sticker(sticker=i, **kwargs)]
 
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                message_ids += [bot.send_animation(chat_id=chat_id,
-                                                   animation=a,
-                                                   caption=c,
-                                                   disable_notification=silent)]
+                message_ids += [bot.send_animation(animation=a, caption=c, **kwargs)]
         else:
             for a in animations:
-                message_ids += [bot.send_animation(chat_id=chat_id, animation=a, disable_notification=silent)]
+                message_ids += [bot.send_animation(animation=a, **kwargs)]
 
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                message_ids += [bot.send_video(chat_id=chat_id, video=v, caption=c, disable_notification=silent)]
+                message_ids += [bot.send_video(video=v, caption=c, **kwargs)]
         else:
             for v in videos:
-                message_ids += [bot.send_video(chat_id=chat_id, video=v, disable_notification=silent)]
+                message_ids += [bot.send_video(video=v, **kwargs)]
 
     if audios:
         if captions:
             for (a, c) in make_captions(audios, captions):
-                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, caption=c, disable_notification=silent)]
+                message_ids += [bot.send_audio(audio=a, caption=c, **kwargs)]
         else:
             for a in audios:
-                message_ids += [bot.send_audio(chat_id=chat_id, audio=a, disable_notification=silent)]
+                message_ids += [bot.send_audio(audio=a, **kwargs)]
 
     if locations:
         it = iter(locations)
@@ -306,10 +307,9 @@ def send(*,
             else:
                 lat = loc
                 lon = next(it)
-            message_ids += [bot.send_location(chat_id=chat_id,
-                                              latitude=float(lat),
+            message_ids += [bot.send_location(latitude=float(lat),
                                               longitude=float(lon),
-                                              disable_notification=silent)]
+                                              **kwargs)]
 
     return message_ids
 

@@ -19,7 +19,7 @@ setup(
 
     python_requires=">=3.6",
     packages=["telegram_send"],
-    install_requires=["python-telegram-bot>=12.1.1", "colorama", "appdirs"],
+    install_requires=["python-telegram-bot>=13.0", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send.telegram_send:main"]},
 
     author="Rahiel Kasim",
