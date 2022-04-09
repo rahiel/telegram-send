@@ -19,6 +19,7 @@ import argparse
 import configparser
 import re
 import sys
+from copy import deepcopy
 from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
 from random import randint
@@ -260,10 +261,14 @@ def send(*,
         captions += [None] * (len(items) - len(captions))
         return zip(items, captions)
 
+    # kwargs for send methods with caption support
+    kwargs_caption = deepcopy(kwargs)
+    kwargs_caption["parse_mode"] = parse_mode
+
     if files:
         if captions:
             for (f, c) in make_captions(files, captions):
-                message_ids += [bot.send_document(document=f, caption=c, **kwargs)]
+                message_ids += [bot.send_document(document=f, caption=c, **kwargs_caption)]
         else:
             for f in files:
                 message_ids += [bot.send_document(document=f, **kwargs)]
@@ -271,7 +276,7 @@ def send(*,
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                message_ids += [bot.send_photo(photo=i, caption=c, **kwargs)]
+                message_ids += [bot.send_photo(photo=i, caption=c, **kwargs_caption)]
         else:
             for i in images:
                 message_ids += [bot.send_photo(photo=i, **kwargs)]
@@ -283,7 +288,7 @@ def send(*,
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                message_ids += [bot.send_animation(animation=a, caption=c, **kwargs)]
+                message_ids += [bot.send_animation(animation=a, caption=c, **kwargs_caption)]
         else:
             for a in animations:
                 message_ids += [bot.send_animation(animation=a, **kwargs)]
@@ -291,7 +296,7 @@ def send(*,
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                message_ids += [bot.send_video(video=v, caption=c, **kwargs)]
+                message_ids += [bot.send_video(video=v, caption=c, **kwargs_caption)]
         else:
             for v in videos:
                 message_ids += [bot.send_video(video=v, **kwargs)]
@@ -299,7 +304,7 @@ def send(*,
     if audios:
         if captions:
             for (a, c) in make_captions(audios, captions):
-                message_ids += [bot.send_audio(audio=a, caption=c, **kwargs)]
+                message_ids += [bot.send_audio(audio=a, caption=c, **kwargs_caption)]
         else:
             for a in audios:
                 message_ids += [bot.send_audio(audio=a, **kwargs)]

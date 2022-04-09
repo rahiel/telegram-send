@@ -100,6 +100,11 @@ To send a location via latitude and longitude:
 telegram-send --location 35.5398033 -79.7488965
 ```
 
+All captions can be optionally formatted with Markdown or html:
+``` shell
+telegram-send --image moon.jpg --caption "The __Moon__ at *Night*" --format markdown
+```
+
 Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
 
 ![](https://cloud.githubusercontent.com/assets/6839756/16735957/51c41cf4-478b-11e6-874a-282f559fb9d3.png)
