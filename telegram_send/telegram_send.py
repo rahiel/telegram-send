@@ -23,6 +23,7 @@ from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
 from random import randint
 from shutil import which
+from typing import NamedTuple, Union
 from subprocess import check_output
 from warnings import warn
 
@@ -206,16 +207,9 @@ def send(*,
     disable_web_page_preview (bool): Disables web page previews for all links in the messages.
     timeout (int|float): The read timeout for network connections in seconds.
     """
-    conf = expanduser(conf) if conf else get_config_path()
-    config = configparser.ConfigParser()
-    if not config.read(conf) or not config.has_section("telegram"):
-        raise ConfigError("Config not found")
-    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
-    if len(missing_options) > 0:
-        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    config = config["telegram"]
-    token = config["token"]
-    chat_id = int(config["chat_id"]) if config["chat_id"].isdigit() else config["chat_id"]
+    settings = get_config_settings(conf)
+    token = settings.token
+    chat_id = settings.chat_id
     request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
@@ -333,17 +327,9 @@ def delete(message_ids, conf=None, timeout=30):
                 `~` expands to user's home directory.
     timeout (int|float): The read timeout for network connections in seconds.
     """
-
-    conf = expanduser(conf) if conf else get_config_path()
-    config = configparser.ConfigParser()
-    if not config.read(conf) or not config.has_section("telegram"):
-        raise ConfigError("Config not found")
-    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
-    if len(missing_options) > 0:
-        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
-    token = config.get("telegram", "token")
-    chat_id = int(config.get("telegram", "chat_id")) if config.get("telegram", "chat_id").isdigit() else config.get("telegram", "chat_id")
-
+    settings = get_config_settings(conf)
+    token = settings.token
+    chat_id = settings.chat_id
     request = telegram.utils.request.Request(read_timeout=timeout)
     bot = telegram.Bot(token, request=request)
 
@@ -523,6 +509,27 @@ def clean():
 
 class ConfigError(Exception):
     pass
+
+
+class Settings(NamedTuple):
+    token: str
+    chat_id: Union[int, str]
+
+
+def get_config_settings(conf=None) -> Settings:
+    conf = expanduser(conf) if conf else get_config_path()
+    config = configparser.ConfigParser()
+    if not config.read(conf) or not config.has_section("telegram"):
+        raise ConfigError("Config not found")
+    missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
+    if len(missing_options) > 0:
+        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+    token = config.get("telegram", "token")
+    chat_id = config.get("telegram", "chat_id")
+    if chat_id.isdigit():
+        chat_id = int(chat_id)
+    chat_id = int(chat_id) if chat_id.isdigit() else chat_id
+    return Settings(token=token, chat_id=chat_id)
 
 
 if __name__ == "__main__":
