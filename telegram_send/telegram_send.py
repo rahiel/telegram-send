@@ -33,7 +33,7 @@ import telegram
 from telegram.constants import MAX_MESSAGE_LENGTH
 
 from .version import __version__
-from .utils import pre, split_message, get_config_path, markup
+from .utils import pre_format, split_message, get_config_path, markup
 
 try:
     import readline
@@ -119,9 +119,6 @@ def main():
         args.message = [message]
 
     try:
-        if args.pre:
-            args.parse_mode = "html"
-            args.message = [pre(m) for m in args.message]
         delete(args.delete)
         message_ids = []
         for c in conf:
@@ -129,6 +126,7 @@ def main():
                 messages=args.message,
                 conf=c,
                 parse_mode=args.parse_mode,
+                pre=args.pre,
                 silent=args.silent,
                 disable_web_page_preview=args.disable_web_page_preview,
                 files=args.file,
@@ -163,8 +161,8 @@ def main():
 
 def send(*,
          messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
-         captions=None, locations=None, conf=None, parse_mode=None, silent=False, disable_web_page_preview=False,
-         timeout=30):
+         captions=None, locations=None, conf=None, parse_mode=None, pre=False, silent=False,
+         disable_web_page_preview=False, timeout=30):
     """Send data over Telegram. All arguments are optional.
 
     Always use this function with explicit keyword arguments. So
@@ -187,6 +185,7 @@ def send(*,
                 `~` expands to user's home directory.
     messages (List[str]): The messages to send.
     parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
+    pre (bool): Send messages as preformatted fixed width (monospace) text.
     files (List[file]): The files to send.
     images (List[file]): The images to send.
     stickers (List[file]): The stickers to send.
@@ -223,6 +222,9 @@ def send(*,
 
     if messages:
         def send_message(message):
+            if pre:
+                parse_mode = "html"
+                message = pre_format(message)
             return bot.send_message(
                 text=message,
                 parse_mode=parse_mode,

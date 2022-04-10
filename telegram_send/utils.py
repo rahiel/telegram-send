@@ -10,7 +10,7 @@ def markup(text: str, style: str) -> str:
     return ansi_codes[style] + text + "\033[0m"
 
 
-def pre(text: str) -> str:
+def pre_format(text: str) -> str:
     escaped_text = html.escape(text)
     return f"<pre>{escaped_text}</pre>"
 
