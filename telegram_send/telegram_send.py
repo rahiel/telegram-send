@@ -109,7 +109,7 @@ def main():
         return clean()
 
     if args.pre:
-        args.parse_mode = "markdown"
+        args.parse_mode = "html"
 
     if args.parse_mode == "markdown":
         # Use the improved MarkdownV2 format by default

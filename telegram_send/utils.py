@@ -1,4 +1,4 @@
-import sys
+import html
 from typing import List
 
 from appdirs import AppDirs
@@ -11,10 +11,8 @@ def markup(text: str, style: str) -> str:
 
 
 def pre(text: str) -> str:
-    if "```" in text:
-        print(markup("Sending a message containing ``` is not supported with --pre.", "red"))
-        sys.exit(1)
-    return "```text\n" + text + "```"
+    escaped_text = html.escape(text)
+    return f"<pre>{escaped_text}</pre>"
 
 
 def split_message(message: str, max_length: int) -> List[str]:
