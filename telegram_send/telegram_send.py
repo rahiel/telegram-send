@@ -108,9 +108,6 @@ def main():
     elif args.clean:
         return clean()
 
-    if args.pre:
-        args.parse_mode = "html"
-
     if args.parse_mode == "markdown":
         # Use the improved MarkdownV2 format by default
         args.parse_mode = telegram.constants.PARSEMODE_MARKDOWN_V2
@@ -119,20 +116,11 @@ def main():
         message = sys.stdin.read()
         if len(message) == 0:
             sys.exit(0)
-        if args.pre:
-            message = pre(message)
-        for c in conf:
-            send(
-                messages=[message],
-                conf=c,
-                parse_mode=args.parse_mode,
-                silent=args.silent,
-                disable_web_page_preview=args.disable_web_page_preview,
-                timeout=args.timeout,
-            )
+        args.message = [message]
 
     try:
         if args.pre:
+            args.parse_mode = "html"
             args.message = [pre(m) for m in args.message]
         delete(args.delete)
         message_ids = []
@@ -156,7 +144,6 @@ def main():
         if args.showids and message_ids:
             smessage_ids = [str(m) for m in message_ids]
             print("message_ids " + " ".join(smessage_ids))
-
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
