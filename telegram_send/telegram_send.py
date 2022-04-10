@@ -221,7 +221,7 @@ def send(*,
     }
 
     if messages:
-        def send_message(message):
+        def send_message(message, parse_mode):
             if pre:
                 parse_mode = "html"
                 message = pre_format(message)
@@ -239,11 +239,11 @@ def send(*,
                     "red"))
                 ms = split_message(m, MAX_MESSAGE_LENGTH)
                 for m in ms:
-                    message_ids += [send_message(m)["message_id"]]
+                    message_ids += [send_message(m, parse_mode)["message_id"]]
             elif len(m) == 0:
                 continue
             else:
-                message_ids += [send_message(m)["message_id"]]
+                message_ids += [send_message(m, parse_mode)["message_id"]]
 
     def make_captions(items, captions):
         # make captions equal length when not all images/files have captions
