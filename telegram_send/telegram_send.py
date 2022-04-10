@@ -397,10 +397,13 @@ def configure(conf, channel=False, group=False, fm_integration=False):
             else:
                 chat_id = "@" + chat_id
         else:
-            print("\nOpen https://web.telegram.org in your browser, sign in and open your private channel."
-                  "\nNow copy the URL in the address bar and enter it here:")
+            print(
+                "\nOpen https://web.telegram.org/?legacy=1#/im in your browser, sign in and open your private channel."
+                "\nNow copy the URL in the address bar and enter it here:")
             url = input(markup(prompt, "magenta")).strip()
-            chat_id = "-100" + re.match(r".+web\.(telegram|tlgr)\.org\/#\/im\?p=c(\d+)", url).group(2)
+            # example: https://web.telegram.org/?legacy=1#/im?p=c1498081025_17886896740758033425
+            match = re.match(r".+web\.(telegram|tlgr)\.org\/\?legacy=1#\/im\?p=c(?P<chat_id>\d+)_\d+", url)
+            chat_id = "-100" + match.group("chat_id")
 
         authorized = False
         while not authorized:
