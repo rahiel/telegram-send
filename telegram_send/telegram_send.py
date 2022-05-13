@@ -285,10 +285,10 @@ def send(*,
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                message_ids += [bot.send_video(video=v, caption=c, **kwargs_caption)]
+                message_ids += [bot.send_video(video=v, caption=c, supports_streaming=True, **kwargs_caption)]
         else:
             for v in videos:
-                message_ids += [bot.send_video(video=v, **kwargs)]
+                message_ids += [bot.send_video(video=v, supports_streaming=True, **kwargs)]
 
     if audios:
         if captions:
