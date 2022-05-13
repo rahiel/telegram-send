@@ -119,7 +119,7 @@ def main():
         args.message = [message]
 
     try:
-        delete(args.delete)
+        delete(args.delete, conf=conf[0])
         message_ids = []
         for c in conf:
             message_ids += send(
