@@ -157,7 +157,7 @@ And then use it like `sleep 10; tg`. This will send you a message with the
 completed command, in this case `sleep 10`.
 
 What if you started a program and forgot to set the alert? Suspend the program
-with Ctrl+Z and then enter `fg; telegram-send "your message here"`.
+with Ctrl+Z and then enter `tg; telegram-send "your message here"`.
 
 To automatically receive notifications for long running commands, use [ntfy][]
 with the Telegram backend.
