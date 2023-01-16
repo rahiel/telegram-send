@@ -30,7 +30,7 @@ from warnings import warn
 
 import colorama
 import telegram
-from telegram.constants import MAX_MESSAGE_LENGTH
+from telegram.constants import MessageLimit
 
 from .version import __version__
 from .utils import pre_format, split_message, get_config_path, markup
@@ -233,11 +233,11 @@ def send(*,
             )
 
         for m in messages:
-            if len(m) > MAX_MESSAGE_LENGTH:
+            if len(m) > MessageLimit.MAX_TEXT_LENGTH:
                 warn(markup(
-                    f"Message longer than MAX_MESSAGE_LENGTH={MAX_MESSAGE_LENGTH}, splitting into smaller messages.",
+                    f"Message longer than MAX_MESSAGE_LENGTH={MessageLimit.MAX_TEXT_LENGTH}, splitting into smaller messages.",
                     "red"))
-                ms = split_message(m, MAX_MESSAGE_LENGTH)
+                ms = split_message(m, MessageLimit.MAX_TEXT_LENGTH)
                 for m in ms:
                     message_ids += [send_message(m, parse_mode)["message_id"]]
             elif len(m) == 0:
