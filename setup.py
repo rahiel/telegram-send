@@ -17,9 +17,9 @@ setup(
     url="https://github.com/rahiel/telegram-send",
     license="GPLv3+",
 
-    python_requires=">=3.6",    # also update classifier below
+    python_requires=">=3.7",    # also update classifier below
     packages=["telegram_send"],
-    install_requires=["python-telegram-bot>=13.0", "colorama", "appdirs"],
+    install_requires=["python-telegram-bot>=20.0", "colorama", "appdirs"],
     entry_points={"console_scripts": ["telegram-send=telegram_send.telegram_send:main"]},
 
     author="Rahiel Kasim",
@@ -35,7 +35,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: POSIX",
         "Operating System :: Microsoft :: Windows",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Communications :: Chat",
         "Topic :: Utilities"
     ],

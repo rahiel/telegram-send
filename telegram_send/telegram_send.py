@@ -16,6 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import argparse
+import asyncio
 import configparser
 import re
 import sys
@@ -30,7 +31,7 @@ from warnings import warn
 
 import colorama
 import telegram
-from telegram.constants import MAX_MESSAGE_LENGTH
+from telegram.constants import MessageLimit
 
 from .version import __version__
 from .utils import pre_format, split_message, get_config_path, markup
@@ -45,6 +46,10 @@ global_config = "/etc/telegram-send.conf"
 
 
 def main():
+    asyncio.run(run())
+
+
+async def run():
     colorama.init()
     parser = argparse.ArgumentParser(description="Send messages and files over Telegram.",
                                      epilog="Homepage: https://github.com/rahiel/telegram-send")
@@ -119,10 +124,10 @@ def main():
         args.message = [message]
 
     try:
-        delete(args.delete, conf=conf[0])
+        await delete(args.delete, conf=conf[0])
         message_ids = []
         for c in conf:
-            message_ids += send(
+            message_ids += await send(
                 messages=args.message,
                 conf=c,
                 parse_mode=args.parse_mode,
@@ -159,7 +164,7 @@ def main():
             raise(e)
 
 
-def send(*,
+async def send(*,
          messages=None, files=None, images=None, stickers=None, animations=None, videos=None, audios=None,
          captions=None, locations=None, conf=None, parse_mode=None, pre=False, silent=False,
          disable_web_page_preview=False, timeout=30):
@@ -217,15 +222,15 @@ def send(*,
     kwargs = {
         "chat_id": chat_id,
         "disable_notification": silent,
-        "timeout": timeout,
+        "read_timeout": timeout,
     }
 
     if messages:
-        def send_message(message, parse_mode):
+        async def send_message(message, parse_mode):
             if pre:
                 parse_mode = "html"
                 message = pre_format(message)
-            return bot.send_message(
+            return await bot.send_message(
                 text=message,
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
@@ -233,17 +238,17 @@ def send(*,
             )
 
         for m in messages:
-            if len(m) > MAX_MESSAGE_LENGTH:
+            if len(m) > MessageLimit.MAX_TEXT_LENGTH:
                 warn(markup(
-                    f"Message longer than MAX_MESSAGE_LENGTH={MAX_MESSAGE_LENGTH}, splitting into smaller messages.",
+                    f"Message longer than MAX_MESSAGE_LENGTH={MessageLimit.MAX_TEXT_LENGTH}, splitting into smaller messages.",
                     "red"))
-                ms = split_message(m, MAX_MESSAGE_LENGTH)
+                ms = split_message(m, MessageLimit.MAX_TEXT_LENGTH)
                 for m in ms:
-                    message_ids += [send_message(m, parse_mode)["message_id"]]
+                    message_ids += [(await send_message(m, parse_mode))["message_id"]]
             elif len(m) == 0:
                 continue
             else:
-                message_ids += [send_message(m, parse_mode)["message_id"]]
+                message_ids += [(await send_message(m, parse_mode))["message_id"]]
 
     def make_captions(items, captions):
         # make captions equal length when not all images/files have captions
@@ -257,46 +262,46 @@ def send(*,
     if files:
         if captions:
             for (f, c) in make_captions(files, captions):
-                message_ids += [bot.send_document(document=f, caption=c, **kwargs_caption)]
+                message_ids += [await bot.send_document(document=f, caption=c, **kwargs_caption)]
         else:
             for f in files:
-                message_ids += [bot.send_document(document=f, **kwargs)]
+                message_ids += [await bot.send_document(document=f, **kwargs)]
 
     if images:
         if captions:
             for (i, c) in make_captions(images, captions):
-                message_ids += [bot.send_photo(photo=i, caption=c, **kwargs_caption)]
+                message_ids += [await bot.send_photo(photo=i, caption=c, **kwargs_caption)]
         else:
             for i in images:
-                message_ids += [bot.send_photo(photo=i, **kwargs)]
+                message_ids += [await bot.send_photo(photo=i, **kwargs)]
 
     if stickers:
         for i in stickers:
-            message_ids += [bot.send_sticker(sticker=i, **kwargs)]
+            message_ids += [await bot.send_sticker(sticker=i, **kwargs)]
 
     if animations:
         if captions:
             for (a, c) in make_captions(animations, captions):
-                message_ids += [bot.send_animation(animation=a, caption=c, **kwargs_caption)]
+                message_ids += [await bot.send_animation(animation=a, caption=c, **kwargs_caption)]
         else:
             for a in animations:
-                message_ids += [bot.send_animation(animation=a, **kwargs)]
+                message_ids += [await bot.send_animation(animation=a, **kwargs)]
 
     if videos:
         if captions:
             for (v, c) in make_captions(videos, captions):
-                message_ids += [bot.send_video(video=v, caption=c, supports_streaming=True, **kwargs_caption)]
+                message_ids += [await bot.send_video(video=v, caption=c, supports_streaming=True, **kwargs_caption)]
         else:
             for v in videos:
-                message_ids += [bot.send_video(video=v, supports_streaming=True, **kwargs)]
+                message_ids += [await bot.send_video(video=v, supports_streaming=True, **kwargs)]
 
     if audios:
         if captions:
             for (a, c) in make_captions(audios, captions):
-                message_ids += [bot.send_audio(audio=a, caption=c, **kwargs_caption)]
+                message_ids += [await bot.send_audio(audio=a, caption=c, **kwargs_caption)]
         else:
             for a in audios:
-                message_ids += [bot.send_audio(audio=a, **kwargs)]
+                message_ids += [await bot.send_audio(audio=a, **kwargs)]
 
     if locations:
         it = iter(locations)
@@ -306,14 +311,14 @@ def send(*,
             else:
                 lat = loc
                 lon = next(it)
-            message_ids += [bot.send_location(latitude=float(lat),
-                                              longitude=float(lon),
-                                              **kwargs)]
+            message_ids += [await bot.send_location(latitude=float(lat),
+                                                    longitude=float(lon),
+                                                    **kwargs)]
 
     return message_ids
 
 
-def delete(message_ids, conf=None, timeout=30):
+async def delete(message_ids, conf=None, timeout=30):
     """Delete messages that have been sent before over Telegram. Restrictions given by Telegram API apply.
 
     Note that Telegram restricts this to messages which have been sent during the last 48 hours.
@@ -334,12 +339,12 @@ def delete(message_ids, conf=None, timeout=30):
     if message_ids:
         for m in message_ids:
             try:
-                bot.delete_message(chat_id=chat_id, message_id=m, timeout=timeout)
+                await bot.delete_message(chat_id=chat_id, message_id=m, read_timeout=timeout)
             except telegram.TelegramError as e:
                 warn(markup(f"Deleting message with id={m} failed: {e}", "red"))
 
 
-def configure(conf, channel=False, group=False, fm_integration=False):
+async def configure(conf, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
 
     # Arguments
@@ -365,7 +370,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
 
     try:
         bot = telegram.Bot(token)
-        bot_name = bot.get_me().username
+        bot_name = await bot.get_me().username
     except Exception:
         print(markup("Something went wrong, please try again.\n", "red"))
         return configure(conf, channel=channel, group=group, fm_integration=fm_integration)
@@ -397,7 +402,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         authorized = False
         while not authorized:
             try:
-                bot.send_chat_action(chat_id=chat_id, action="typing")
+                await bot.send_chat_action(chat_id=chat_id, action="typing")
                 authorized = True
             except (telegram.error.Unauthorized, telegram.error.BadRequest):
                 # Telegram returns a BadRequest when a non-admin bot tries to send to a private channel
@@ -418,8 +423,8 @@ def configure(conf, channel=False, group=False, fm_integration=False):
 
         update, update_id = None, None
 
-        def get_user():
-            updates = bot.get_updates(offset=update_id, timeout=10)
+        async def get_user():
+            updates = await bot.get_updates(offset=update_id, read_timeout=10)
             for update in updates:
                 if update.message:
                     if update.message.text == password:
@@ -431,7 +436,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
 
         while update is None:
             try:
-                update, update_id = get_user()
+                update, update_id = await get_user()
             except Exception as e:
                 print("Error! {}".format(e))
 
@@ -440,7 +445,7 @@ def configure(conf, channel=False, group=False, fm_integration=False):
         m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
         ball = "🎊"
         print(markup("".join(m), "green"))
-        bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
+        await bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
 
     config = configparser.ConfigParser()
     config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
