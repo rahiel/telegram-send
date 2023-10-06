@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
-# Copyright (C) 2016-2022  Rahiel Kasim
+# Copyright (C) 2016-2023  Rahiel Kasim
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -115,7 +115,7 @@ async def run():
 
     if args.parse_mode == "markdown":
         # Use the improved MarkdownV2 format by default
-        args.parse_mode = telegram.constants.PARSEMODE_MARKDOWN_V2
+        args.parse_mode = telegram.constants.ParseMode.MARKDOWN_V2
 
     if args.stdin:
         message = sys.stdin.read()
