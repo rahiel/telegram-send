@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 telegram-send = {editable = true, path = "."}
+python-telegram-bot = "==20.6"
 
 [dev-packages]
 mypy = "*"
