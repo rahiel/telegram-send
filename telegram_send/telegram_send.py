@@ -121,7 +121,7 @@ async def run():
         message = sys.stdin.read()
         if len(message) == 0:
             sys.exit(0)
-        args.message = [message]
+        args.message = [message] + args.message
 
     try:
         await delete(args.delete, conf=conf[0])
