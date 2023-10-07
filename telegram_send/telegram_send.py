@@ -99,11 +99,11 @@ async def run():
         conf = args.conf
 
     if args.configure:
-        return configure(conf[0], fm_integration=True)
+        return await configure(conf[0], fm_integration=True)
     elif args.configure_channel:
-        return configure(conf[0], channel=True)
+        return await configure(conf[0], channel=True)
     elif args.configure_group:
-        return configure(conf[0], group=True)
+        return await configure(conf[0], group=True)
     elif args.file_manager:
         if not sys.platform.startswith("win32"):
             return integrate_file_manager()
@@ -370,10 +370,12 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
 
     try:
         bot = telegram.Bot(token)
-        bot_name = await bot.get_me().username
-    except Exception:
+        bot_details = await bot.get_me()
+        bot_name = bot_details.username
+    except Exception as e:
+        print("Error: {}".format(e))
         print(markup("Something went wrong, please try again.\n", "red"))
-        return configure(conf, channel=channel, group=group, fm_integration=fm_integration)
+        return await configure(conf, channel=channel, group=group, fm_integration=fm_integration)
 
     print("Connected with {}.\n".format(markup(bot_name, "cyan")))
 
@@ -382,7 +384,10 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
               .format(markup("public", "bold"), markup("private", "bold")))
         channel_type = input(markup(prompt, "magenta")).strip()
         if channel_type.startswith("pub"):
-            print("\nEnter your channel's public name or link:")
+            print(
+                "\nEnter your channel's public name or link: "
+                "\nExample: @username or https://t.me/username"
+            )
             chat_id = input(markup(prompt, "magenta")).strip()
             if "/" in chat_id:
                 chat_id = "@" + chat_id.split("/")[-1]
@@ -393,9 +398,10 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
         else:
             print(
                 "\nOpen https://web.telegram.org/?legacy=1#/im in your browser, sign in and open your private channel."
-                "\nNow copy the URL in the address bar and enter it here:")
+                "\nNow copy the URL in the address bar and enter it here:"
+                "\nExample: https://web.telegram.org/?legacy=1#/im?p=c1498081025_17886896740758033425"
+            )
             url = input(markup(prompt, "magenta")).strip()
-            # example: https://web.telegram.org/?legacy=1#/im?p=c1498081025_17886896740758033425
             match = re.match(r".+web\.(telegram|tlgr)\.org\/\?legacy=1#\/im\?p=c(?P<chat_id>\d+)_\d+", url)
             chat_id = "-100" + match.group("chat_id")
 
@@ -404,7 +410,7 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
             try:
                 await bot.send_chat_action(chat_id=chat_id, action="typing")
                 authorized = True
-            except (telegram.error.Unauthorized, telegram.error.BadRequest):
+            except (telegram.error.Forbidden, telegram.error.BadRequest):
                 # Telegram returns a BadRequest when a non-admin bot tries to send to a private channel
                 input("Please add {} as administrator to your channel and press Enter"
                       .format(markup(bot_name, "cyan")))
