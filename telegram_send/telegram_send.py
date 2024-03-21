@@ -553,7 +553,7 @@ class Settings(NamedTuple):
     reply_to_message_id: Union[int, str, None]
 
 
-def get_config_settings(conf=None, bot=None) -> Settings:
+def get_config_settings(conf=None) -> Settings:
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
     if not config.read(conf) or not config.has_section("telegram"):
