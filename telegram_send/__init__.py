@@ -1,5 +1,4 @@
-# TODO: rollback to .version before sending PR
-from version import __version__
+from .version import __version__
 from .telegram_send import configure, send
 
 

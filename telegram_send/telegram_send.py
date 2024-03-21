@@ -33,9 +33,8 @@ import colorama
 import telegram
 from telegram.constants import MessageLimit
 
-# TODO: rollback to .version and .utils before sending PR
-from version import __version__
-from utils import pre_format, split_message, get_config_path, markup
+from .version import __version__
+from .utils import pre_format, split_message, get_config_path, markup
 
 try:
     import readline
