@@ -207,6 +207,7 @@ async def send(*,
     settings = get_config_settings(conf)
     token = settings.token
     chat_id = settings.chat_id
+    reply_to_message_id = settings.reply_to_message_id
     bot = telegram.Bot(token)
 
     # We let the user specify "text" as a parse mode to be more explicit about
@@ -223,6 +224,7 @@ async def send(*,
         "chat_id": chat_id,
         "disable_notification": silent,
         "read_timeout": timeout,
+        "reply_to_message_id": reply_to_message_id
     }
 
     if messages:
@@ -440,6 +442,14 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
             else:
                 return None, None
 
+        def get_root_topic_message(message: telegram.Message):
+            while message.reply_to_message is not None:
+                message = message.reply_to_message
+
+            if message.forum_topic_created is not None:
+                return message
+            return None
+
         while update is None:
             try:
                 update, update_id = await get_user()
@@ -448,13 +458,27 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
 
         chat_id = update.message.chat_id
         user = update.message.from_user.username or update.message.from_user.first_name
+        root_topic_message = None
+
+        if update.message.chat.is_forum:
+            root_topic_message = get_root_topic_message(update.message)
+
         m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
         ball = "🎊"
         print(markup("".join(m), "green"))
-        await bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1])
+
+        kwargs = {
+            "reply_to_message_id": root_topic_message.message_id if isinstance(root_topic_message, telegram.Message) else None
+        }
+
+        await bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1], **kwargs)
 
     config = configparser.ConfigParser()
-    config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
+
+    if root_topic_message is not None and isinstance(root_topic_message, telegram.Message):
+        config["telegram"] = {"TOKEN": token, "chat_id": chat_id, "reply_to_message_id": root_topic_message.message_id}
+    else:
+        config["telegram"] = {"TOKEN": token, "chat_id": chat_id}
     conf_dir = dirname(conf)
     if conf_dir:
         makedirs(conf_dir, exist_ok=True)
@@ -526,6 +550,7 @@ class ConfigError(Exception):
 class Settings(NamedTuple):
     token: str
     chat_id: Union[int, str]
+    reply_to_message_id: Union[int, str, None]
 
 
 def get_config_settings(conf=None) -> Settings:
@@ -538,9 +563,12 @@ def get_config_settings(conf=None) -> Settings:
         raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
     token = config.get("telegram", "token")
     chat_id = config.get("telegram", "chat_id")
+    reply_to_message_id = config.get("telegram", "reply_to_message_id", fallback=None)
     if chat_id.isdigit():
         chat_id = int(chat_id)
-    return Settings(token=token, chat_id=chat_id)
+    if reply_to_message_id is not None and reply_to_message_id.isdigit():
+        reply_to_message_id = int(reply_to_message_id)
+    return Settings(token=token, chat_id=chat_id, reply_to_message_id=reply_to_message_id)
 
 
 if __name__ == "__main__":
