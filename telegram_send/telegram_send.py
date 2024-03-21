@@ -457,7 +457,7 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
                 print("Error! {}".format(e))
 
         chat_id = update.message.chat_id
-        user = update.message.from_user.username or update.message.from_user.first_nam
+        user = update.message.from_user.username or update.message.from_user.first_name
         root_topic_message = None
 
         if update.message.chat.is_forum:
