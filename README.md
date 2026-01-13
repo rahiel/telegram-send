@@ -14,16 +14,19 @@ can be easily called from other programs.
 
 - [Usage](#usage)
 - [Installation](#installation)
+  - [macOS](#macos)
+  - [Linux](#linux)
 - [Examples](#examples)
-    - [Alert on completion of shell commands](#alert-on-completion-of-shell-commands)
-    - [Periodic messages with cron](#periodic-messages-with-cron)
-    - [Supervisor process state notifications](#supervisor-process-state-notifications)
-    - [Usage from Python](#usage-from-python)
-    - [Cron job output](#cron-job-output)
-    - [ASCII pictures](#ascii-pictures)
+  - [Alert on completion of shell commands](#alert-on-completion-of-shell-commands)
+  - [Periodic messages with cron](#periodic-messages-with-cron)
+  - [Supervisor process state notifications](#supervisor-process-state-notifications)
+  - [Usage from Python](#usage-from-python)
+  - [Cron job output](#cron-job-output)
+  - [ASCII pictures](#ascii-pictures)
 - [Questions & Answers](#questions--answers)
-    - [How to use a proxy?](#how-to-use-a-proxy)
-    - [How to send the same message to multiple users?](#how-to-send-the-same-message-to-multiple-users)
+  - [How to use a proxy?](#how-to-use-a-proxy)
+  - [How to send the same message to multiple users?](#how-to-send-the-same-message-to-multiple-users)
+  - [How to get sticker files?](#how-to-get-sticker-files)
 - [Uninstallation](#uninstallation)
 
 <!-- markdown-toc end -->
@@ -110,6 +113,24 @@ Telegram-send integrates into your file manager (Thunar, Nautilus and Nemo):
 ![](https://cloud.githubusercontent.com/assets/6839756/16735957/51c41cf4-478b-11e6-874a-282f559fb9d3.png)
 
 # Installation
+
+## macOS
+
+``` shell
+brew install pipx
+pipx ensurepath
+pipx install telegram-send
+```
+
+## Linux
+
+On Ubuntu/Debian:
+
+``` shell
+sudo apt install telegram-send
+```
+
+On other Linux systems:
 
 Install telegram-send system-wide with pip:
 ``` shell

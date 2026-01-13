@@ -186,23 +186,23 @@ async def send(*,
 
     # Arguments
 
-    conf (str): Path of configuration file to use. Will use the default config if not specified.
-                `~` expands to user's home directory.  
-    messages (List[str]): The messages to send.  
-    parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.  
-    pre (bool): Send messages as preformatted fixed width (monospace) text.  
-    files (List[file]): The files to send.  
-    images (List[file]): The images to send.  
-    stickers (List[file]): The stickers to send.  
-    animations (List[file]): The animations to send.  
-    videos (List[file]): The videos to send.  
-    audios (List[file]): The audios to send.  
-    captions (List[str]): The captions to send with the images/files/animations/videos or audios.  
-    locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
-                           separated by whitespace or a comma.  
-    silent (bool): Send silently without sound.  
-    disable_web_page_preview (bool): Disables web page previews for all links in the messages.  
-    timeout (int|float): The read timeout for network connections in seconds.
+    - conf (str): Path of configuration file to use. Will use the default config if not specified.
+                   `~` expands to user's home directory.
+    - messages (List[str]): The messages to send.
+    - parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
+    - pre (bool): Send messages as preformatted fixed width (monospace) text.
+    - files (List[file]): The files to send.
+    - images (List[file]): The images to send.
+    - stickers (List[file]): The stickers to send.
+    - animations (List[file]): The animations to send.
+    - videos (List[file]): The videos to send.
+    - audios (List[file]): The audios to send.
+    - captions (List[str]): The captions to send with the images/files/animations/videos or audios.
+    - locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
+                             separated by whitespace or a comma.
+    - silent (bool): Send silently without sound.
+    - disable_web_page_preview (bool): Disables web page previews for all links in the messages.
+    - timeout (int|float): The read timeout for network connections in seconds.
     """
     settings = get_config_settings(conf)
     token = settings.token
@@ -328,10 +328,10 @@ async def delete(message_ids, conf=None, timeout=30):
 
     # Arguments
 
-    message_ids (List[str]): The messages ids of all messages to be deleted.  
-    conf (str): Path of configuration file to use. Will use the default config if not specified.
-                `~` expands to user's home directory.  
-    timeout (int|float): The read timeout for network connections in seconds.
+    - message_ids (List[str]): The messages ids of all messages to be deleted.
+    - conf (str): Path of configuration file to use. Will use the default config if not specified.
+                  `~` expands to user's home directory.
+    - timeout (int|float): The read timeout for network connections in seconds.
     """
     settings = get_config_settings(conf)
     token = settings.token
@@ -351,11 +351,11 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
 
     # Arguments
 
-    conf (str): Path where to save the configuration file. May contain `~` for
-                user's home.  
-    channel (Optional[bool]): Configure a channel.  
-    group (Optional[bool]): Configure a group.  
-    fm_integration (Optional[bool]): Setup file manager integration.
+    - conf (str): Path where to save the configuration file. May contain `~` for
+                  user's home.
+    - channel (Optional[bool]): Configure a channel.
+    - group (Optional[bool]): Configure a group.
+    - fm_integration (Optional[bool]): Setup file manager integration.
     """
     conf = expanduser(conf) if conf else get_config_path()
     prompt = "❯ " if not sys.platform.startswith("win32") else "> "
