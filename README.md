@@ -318,12 +318,8 @@ can then send the saved `webp` file with `telegram-send --sticker sticker.webp`.
 # Uninstallation
 
 ``` shell
-sudo telegram-send --clean
-sudo pip3 uninstall telegram-send
+telegram-send --clean
+pipx uninstall telegram-send
 ```
 
-Or if you installed it for a single user:
-``` shell
-telegram-send --clean
-pip3 uninstall telegram-send
-```
+Or uninstall with your package manager.
