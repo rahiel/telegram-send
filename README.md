@@ -130,20 +130,15 @@ On Ubuntu/Debian:
 sudo apt install telegram-send
 ```
 
-On other Linux systems:
+On other Linux systems or if you need a newer version:
 
-Install telegram-send system-wide with pip:
+First [Install the `pipx` package using your package manager](https://pipx.pypa.io/stable/installation/).
+
+Then run:
 ``` shell
-sudo pip3 install telegram-send
+pipx ensurepath
+pipx install telegram-send
 ```
-
-Or if you want to install it for a single user without root permissions:
-``` shell
-pip3 install telegram-send
-```
-
-If installed for a single user you need to add `~/.local/bin` to their path,
-refer to this [guide][] for instructions.
 
 And finally configure it with `telegram-send --configure` if you want to send to
 your account, `telegram-send --configure-group` to send to a group or with
@@ -156,10 +151,13 @@ it: `telegram-send --config channel.conf "Bismillah"`.
 
 The `-g` option uses the global configuration at `/etc/telegram-send.conf`.
 Configure it once: `sudo telegram-send -g --configure` and all users on the
-system can send messages with this config: `telegram-send -g "GNU"` (provided
-you've installed it system-wide.)
+system can send messages with this config: `telegram-send -g "GNU"`. To use this
+option you need to install telegram-send with sudo:
 
-[guide]: https://www.rahielkasim.com/installing-programs-from-non-system-package-managers-without-sudo/
+Install telegram-send system-wide with pip:
+``` shell
+sudo pip3 install telegram-send
+```
 
 # Examples
 
@@ -234,7 +232,7 @@ Because telegram-send is written in Python, you can use its functionality
 directly from other Python programs: `import telegram_send`. Look at the
 [documentation][].
 
-[documentation]: https://www.rahielkasim.com/telegram-send/docs/api/
+[documentation]: https://rahiel.github.io/telegram-send/telegram_send.html#send
 
 ## Cron job output
 

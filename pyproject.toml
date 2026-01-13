@@ -30,6 +30,7 @@ dependencies = [
 [project.urls]
 homepage = "https://github.com/rahiel/telegram-send"
 issues = "https://github.com/rahiel/telegram-send/issues"
+documentation = "https://rahiel.github.io/telegram-send/"
 
 [project.scripts]
 telegram-send = "telegram_send.telegram_send:main"
