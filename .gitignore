@@ -5,3 +5,5 @@ build
 dist
 docs*
 secret*
+*.conf
+*.txt
