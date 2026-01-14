@@ -7,7 +7,7 @@ authors = [
     {name = "Rahiel Kasim", email = "rahielkasim@gmail.com"}
 ]
 license = "GPL-3.0-or-later"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
@@ -24,7 +24,7 @@ keywords = ["telegram", "send", "message", "file"]
 dependencies = [
     "appdirs>=1.4.4",
     "colorama>=0.4.6",
-    "python-telegram-bot==20.6",
+    "python-telegram-bot==22.5",
 ]
 
 [project.urls]
@@ -51,6 +51,6 @@ max-line-length = 120
 
 [dependency-groups]
 dev = [
-    "pdoc>=15.0.4",
+    "pdoc>=16.0.0",
     "ruff>=0.14.11",
 ]

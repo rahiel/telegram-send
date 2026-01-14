@@ -8,3 +8,8 @@ secret*
 *.conf
 *.txt
 *.html
+*.gif
+*.png
+*.webp
+*.dat
+*.webm

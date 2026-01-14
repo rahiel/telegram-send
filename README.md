@@ -44,7 +44,7 @@ To send a message using Markdown or HTML formatting:
 ```shell
 telegram-send --format markdown "Only the *bold* use _italics_"
 telegram-send --format html "<pre>fixed-width messages</pre> are <i>also</i> supported"
-telegram-send --format markdown "||Do good and find good!||"
+telegram-send --format markdown "||Do good and find good\!||"  # spoiler
 ```
 Note that not all Markdown syntax or all HTML tags are supported. For more
 information on supported formatting, see the [formatting options][]. We use the
@@ -275,12 +275,12 @@ apt-get moo | telegram-send --pre --stdin
 
 You can set a proxy with an environment variable:
 ``` shell
-https_proxy=https://ip:port telegram-send "hello"
+HTTPS_PROXY=https://ip:port telegram-send "hello"
 ```
 
 Within Python you can set the environment variable with:
 ``` python
-os.environ["https_proxy"] = "https://ip:port"
+os.environ["HTTPS_PROXY"] = "https://ip:port"
 ```
 
 If you have a SOCKS proxy, you need to install support for it:
