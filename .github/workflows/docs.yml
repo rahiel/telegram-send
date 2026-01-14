@@ -2,7 +2,7 @@ name: Generate and Deploy Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 permissions:
