@@ -4,6 +4,9 @@
 [![pyversions](https://img.shields.io/pypi/pyversions/telegram-send.svg)](https://pypi.org/project/telegram-send/)
 [![Downloads](https://img.shields.io/pypi/dm/telegram-send)](https://pypistats.org/packages/telegram-send)
 [![License](https://img.shields.io/badge/License-GPLv3+-blue.svg)](https://github.com/rahiel/telegram-send/blob/master/LICENSE.txt)
+[![Debian package](https://img.shields.io/debian/v/telegram-send)](https://packages.debian.org/sid/telegram-send)
+[![Ubuntu Package Version](https://img.shields.io/ubuntu/v/telegram-send)](https://packages.debian.org/sid/telegram-send)
+
 
 Telegram-send is a command-line tool to send messages and files over Telegram to
 your account, to a group or to a channel. It provides a simple interface that
