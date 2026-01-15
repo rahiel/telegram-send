@@ -273,7 +273,7 @@ wheels = [
 name = "telegram-send"
 source = { editable = "." }
 dependencies = [
-    { name = "colorama" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
     { name = "platformdirs" },
     { name = "python-telegram-bot" },
 ]
@@ -286,7 +286,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "colorama", specifier = ">=0.4.6" },
+    { name = "colorama", marker = "sys_platform == 'win32'", specifier = ">=0.4.6" },
     { name = "platformdirs", specifier = ">=4.5.1" },
     { name = "python-telegram-bot", specifier = "==22.5" },
 ]

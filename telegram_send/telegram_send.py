@@ -29,7 +29,6 @@ from typing import NamedTuple, Union
 from subprocess import check_output
 from warnings import warn
 
-import colorama
 import telegram
 from telegram.constants import MessageLimit
 
@@ -38,6 +37,13 @@ from .utils import pre_format, split_message, get_config_path, markup
 
 try:
     import readline
+except ImportError:
+    pass
+
+
+try:
+    from colorama import just_fix_windows_console
+    just_fix_windows_console()
 except ImportError:
     pass
 
