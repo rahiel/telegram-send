@@ -22,8 +22,8 @@ classifiers = [
 ]
 keywords = ["telegram", "send", "message", "file"]
 dependencies = [
-    "appdirs>=1.4.4",
     "colorama>=0.4.6",
+    "platformdirs>=4.5.1",
     "python-telegram-bot==22.5",
 ]
 

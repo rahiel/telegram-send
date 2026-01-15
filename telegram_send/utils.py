@@ -1,7 +1,7 @@
 import html
 from typing import List
 
-from appdirs import AppDirs
+from platformdirs import user_config_dir
 
 
 def markup(text: str, style: str) -> str:
@@ -26,4 +26,4 @@ def split_message(message: str, max_length: int) -> List[str]:
 
 
 def get_config_path():
-    return AppDirs("telegram-send").user_config_dir + ".conf"
+    return user_config_dir("telegram-send") + ".conf"

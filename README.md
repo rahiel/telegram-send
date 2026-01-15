@@ -27,6 +27,7 @@ can be easily called from other programs.
   - [How to use a proxy?](#how-to-use-a-proxy)
   - [How to send the same message to multiple users?](#how-to-send-the-same-message-to-multiple-users)
   - [How to get sticker files?](#how-to-get-sticker-files)
+  - [Other Questions](#other-questions)
 - [Uninstallation](#uninstallation)
 
 <!-- markdown-toc end -->
@@ -314,6 +315,11 @@ telegram-send --config user1.conf \
 
 In Telegram Desktop you right click a sticker and choose "Save Image As...". You
 can then send the saved `webp` file with `telegram-send --sticker sticker.webp`.
+
+## Other Questions
+
+There are many answered questions and answers in the issue tracker:
+https://github.com/rahiel/telegram-send/issues?q=is%3Aissue%20state%3Aclosed%20label%3Aquestion
 
 # Uninstallation
 
