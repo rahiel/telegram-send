@@ -571,13 +571,11 @@ def get_config_settings(conf=None) -> Settings:
         raise ConfigError(f"Missing options in config: {', '.join(missing_options)}")
 
     token = config.get("telegram", "token")
-    config_chat_id = config.get("telegram", "chat_id")
-    config_reply_to_message_id = config.get("telegram", "reply_to_message_id", fallback=None)
+    chat = config.get("telegram", "chat_id")
+    reply = config.get("telegram", "reply_to_message_id", fallback=None)
 
-    if config_chat_id.isdigit():
-        chat_id = int(config_chat_id)
-    if config_reply_to_message_id is not None and config_reply_to_message_id.isdigit():
-        reply_to_message_id = int(config_reply_to_message_id)
+    chat_id = int(chat) if chat.isdigit() else chat
+    reply_to_message_id = int(reply) if reply and reply.isdigit() else reply
     return Settings(token=token, chat_id=chat_id, reply_to_message_id=reply_to_message_id)
 
 
