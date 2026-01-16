@@ -362,8 +362,9 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
     - fm_integration (Optional[bool]): Setup file manager integration.
     """
     conf = expanduser(conf) if conf else get_config_path()
-    prompt = "❯ " if not sys.platform.startswith("win32") else "> "
+    prompt = "❯ "
     contact_url = "https://telegram.me/"
+    root_topic_message = None
 
     print(f"Talk with the {markup('BotFather', 'cyan')} on Telegram ({contact_url}BotFather), "
           "create a bot and insert the token")
@@ -460,7 +461,6 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
 
         chat_id = update.message.chat_id
         user = update.message.from_user.username or update.message.from_user.first_name
-        root_topic_message = None
 
         if update.message.chat.is_forum:
             root_topic_message = get_root_topic_message(update.message)
