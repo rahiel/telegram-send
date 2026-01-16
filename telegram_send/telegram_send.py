@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # telegram-send - Send messages and files over Telegram from the command-line
 # Copyright (C) 2016-2026  Rahiel Kasim
 #
@@ -93,7 +92,7 @@ async def run():
     parser.add_argument("--clean", help="Clean %(prog)s configuration files.", action="store_true")
     parser.add_argument("--timeout", help="Set the read timeout for network operations. (in seconds)",
                         type=float, default=30., action="store")
-    parser.add_argument("--version", action="version", version="%(prog)s {}".format(__version__))
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args()
 
     if args.global_config:
@@ -151,22 +150,22 @@ async def run():
             )
         if args.showids and message_ids:
             smessage_ids = [str(m) for m in message_ids]
-            print("message_ids " + " ".join(smessage_ids))
+            print(f"message_ids {' '.join(smessage_ids)}")
     except ConfigError as e:
         print(markup(str(e), "red"))
         cmd = "telegram-send --configure"
         if args.global_config:
             cmd = "sudo " + cmd + " --global-config"
-        print("Please run: " + markup(cmd, "bold"))
+        print(f"Please run: {markup(cmd, 'bold')}")
         sys.exit(1)
     except telegram.error.NetworkError as e:
         if "timed out" in str(e).lower():
             print(markup("Error: Connection timed out", "red"))
             print("Please run with a longer timeout.\n"
-                  "Try with the option: " + markup("--timeout {}".format(args.timeout + 10), "bold"))
+                  f"Try with the option: {markup(f'--timeout {args.timeout + 10}', 'bold')}")
             sys.exit(1)
         else:
-            raise(e)
+            raise e
 
 
 async def send(*,
@@ -366,8 +365,8 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
     prompt = "❯ " if not sys.platform.startswith("win32") else "> "
     contact_url = "https://telegram.me/"
 
-    print("Talk with the {} on Telegram ({}), create a bot and insert the token"
-          .format(markup("BotFather", "cyan"), contact_url + "BotFather"))
+    print(f"Talk with the {markup('BotFather', 'cyan')} on Telegram ({contact_url}BotFather), "
+          "create a bot and insert the token")
     try:
         token = input(markup(prompt, "magenta")).strip()
     except UnicodeEncodeError:
@@ -380,15 +379,14 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
         bot_details = await bot.get_me()
         bot_name = bot_details.username
     except Exception as e:
-        print("Error: {}".format(e))
+        print(f"Error: {e}")
         print(markup("Something went wrong, please try again.\n", "red"))
         return await configure(conf, channel=channel, group=group, fm_integration=fm_integration)
 
-    print("Connected with {}.\n".format(markup(bot_name, "cyan")))
+    print(f"Connected with {markup(bot_name, 'cyan')}.\n")
 
     if channel:
-        print("Do you want to send to a {} or a {} channel? [pub/priv]"
-              .format(markup("public", "bold"), markup("private", "bold")))
+        print(f"Do you want to send to a {markup('public', 'bold')} or a {markup('private', 'bold')} channel? [pub/priv]")
         channel_type = input(markup(prompt, "magenta")).strip()
         if channel_type.startswith("pub"):
             print(
@@ -419,20 +417,19 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
                 authorized = True
             except (telegram.error.Forbidden, telegram.error.BadRequest):
                 # Telegram returns a BadRequest when a non-admin bot tries to send to a private channel
-                input("Please add {} as administrator to your channel and press Enter"
-                      .format(markup(bot_name, "cyan")))
+                input(f"Please add {markup(bot_name, 'cyan')} as administrator to your channel and press Enter")
         print(markup("\nCongratulations! telegram-send can now post to your channel!", "green"))
     else:
         password = "".join([str(randint(0, 9)) for _ in range(5)])
         bot_url = contact_url + bot_name
         fancy_bot_name = markup(bot_name, "cyan")
         if group:
-            password = "/{}@{}".format(password, bot_name)
-            print("Please add {} to your group\nand send the following message to the group: {}\n"
-                  .format(fancy_bot_name, markup(password, "bold")))
+            password = f"/{password}@{bot_name}"
+            print(f"Please add {fancy_bot_name} to your group\nand send the following message to the group: "
+                  f"{markup(password, 'bold')}\n")
         else:
-            print("Please add {} on Telegram ({})\nand send it the password: {}\n"
-                  .format(fancy_bot_name, bot_url, markup(password, "bold")))
+            print(f"Please add {fancy_bot_name} on Telegram ({bot_url})\nand send it the password: "
+                  f"{markup(password, 'bold')}\n")
 
         update, update_id = None, None
 
@@ -459,7 +456,7 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
             try:
                 update, update_id = await get_user()
             except Exception as e:
-                print("Error! {}".format(e))
+                print(f"Error! {e}")
 
         chat_id = update.message.chat_id
         user = update.message.from_user.username or update.message.from_user.first_name
@@ -468,15 +465,13 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
         if update.message.chat.is_forum:
             root_topic_message = get_root_topic_message(update.message)
 
-        m = ("Congratulations {}! ".format(user), "\ntelegram-send is now ready for use!")
-        ball = "🎊"
-        print(markup("".join(m), "green"))
+        text = f"🎊 Congratulations {user}! 🎊\ntelegram-send is now ready for use!"
+        print(markup(text, "green"))
 
         kwargs = {
             "reply_to_message_id": root_topic_message.message_id if isinstance(root_topic_message, telegram.Message) else None
         }
-
-        await bot.send_message(chat_id=chat_id, text=ball + " " + m[0] + ball + m[1], **kwargs)
+        await bot.send_message(chat_id=chat_id, text=text, **kwargs)
 
     config = configparser.ConfigParser()
 
@@ -544,7 +539,7 @@ def clean():
             remove(global_config)
         except OSError:
             print(markup("Can't delete /etc/telegram-send.conf", "red"))
-            print("Please run: " + markup("sudo telegram-send --clean", "bold"))
+            print(f"Please run: {markup('sudo telegram-send --clean', 'bold')}")
             sys.exit(1)
 
 
@@ -565,7 +560,7 @@ def get_config_settings(conf=None) -> Settings:
         raise ConfigError("Config not found")
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
-        raise ConfigError("Missing options in config: {}".format(", ".join(missing_options)))
+        raise ConfigError(f"Missing options in config: {', '.join(missing_options)}")
     token = config.get("telegram", "token")
     chat_id = config.get("telegram", "chat_id")
     reply_to_message_id = config.get("telegram", "reply_to_message_id", fallback=None)
