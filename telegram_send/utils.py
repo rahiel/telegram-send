@@ -1,5 +1,4 @@
 import html
-from typing import List
 
 from platformdirs import user_config_dir
 
@@ -15,7 +14,7 @@ def pre_format(text: str) -> str:
     return f"<pre>{escaped_text}</pre>"
 
 
-def split_message(message: str, max_length: int) -> List[str]:
+def split_message(message: str, max_length: int) -> list[str]:
     """Split large message into smaller messages each smaller than the max_length."""
     ms = []
     while len(message) > max_length:
@@ -25,5 +24,5 @@ def split_message(message: str, max_length: int) -> List[str]:
     return ms
 
 
-def get_config_path():
+def get_config_path() -> str:
     return user_config_dir("telegram-send") + ".conf"

@@ -24,7 +24,7 @@ from os import makedirs, remove
 from os.path import dirname, exists, expanduser, join
 from random import randint
 from shutil import which
-from typing import NamedTuple, Union
+from typing import NamedTuple
 from subprocess import check_output
 from warnings import warn
 
@@ -94,6 +94,8 @@ async def run():
                         type=float, default=30., action="store")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args()
+
+    conf : list[str | None]
 
     if args.global_config:
         conf = [global_config]
@@ -192,17 +194,17 @@ async def send(*,
 
     - conf (str): Path of configuration file to use. Will use the default config if not specified.
                    `~` expands to user's home directory.
-    - messages (List[str]): The messages to send.
+    - messages (list[str]): The messages to send.
     - parse_mode (str): Specifies formatting of messages, one of `["text", "markdown", "html"]`.
     - pre (bool): Send messages as preformatted fixed width (monospace) text.
-    - files (List[file]): The files to send.
-    - images (List[file]): The images to send.
-    - stickers (List[file]): The stickers to send.
-    - animations (List[file]): The animations to send.
-    - videos (List[file]): The videos to send.
-    - audios (List[file]): The audios to send.
-    - captions (List[str]): The captions to send with the images/files/animations/videos or audios.
-    - locations (List[str]): The locations to send. Locations are strings containing the latitude and longitude
+    - files (list[file]): The files to send.
+    - images (list[file]): The images to send.
+    - stickers (list[file]): The stickers to send.
+    - animations (list[file]): The animations to send.
+    - videos (list[file]): The videos to send.
+    - audios (list[file]): The audios to send.
+    - captions (list[str]): The captions to send with the images/files/animations/videos or audios.
+    - locations (list[str]): The locations to send. Locations are strings containing the latitude and longitude
                              separated by whitespace or a comma.
     - silent (bool): Send silently without sound.
     - disable_web_page_preview (bool): Disables web page previews for all links in the messages.
@@ -332,7 +334,7 @@ async def delete(message_ids, conf=None, timeout=30):
 
     # Arguments
 
-    - message_ids (List[str]): The messages ids of all messages to be deleted.
+    - message_ids (list[str]): The messages ids of all messages to be deleted.
     - conf (str): Path of configuration file to use. Will use the default config if not specified.
                   `~` expands to user's home directory.
     - timeout (int|float): The read timeout for network connections in seconds.
@@ -346,11 +348,11 @@ async def delete(message_ids, conf=None, timeout=30):
         for m in message_ids:
             try:
                 await bot.delete_message(chat_id=chat_id, message_id=m, read_timeout=timeout)
-            except telegram.TelegramError as e:
+            except telegram.error.TelegramError as e:
                 warn(markup(f"Deleting message with id={m} failed: {e}", "red"))
 
 
-async def configure(conf, channel=False, group=False, fm_integration=False):
+async def configure(conf=None, channel=False, group=False, fm_integration=False):
     """Guide user to set up the bot, saves configuration at `conf`.
 
     # Arguments
@@ -379,6 +381,7 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
         bot = telegram.Bot(token)
         bot_details = await bot.get_me()
         bot_name = bot_details.username
+        assert bot_name is not None
     except Exception as e:
         print(f"Error: {e}")
         print(markup("Something went wrong, please try again.\n", "red"))
@@ -409,6 +412,9 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
             )
             url = input(markup(prompt, "magenta")).strip()
             match = re.match(r".+web\.(telegram|tlgr)\.org\/\?legacy=1#\/im\?p=c(?P<chat_id>\d+)_\d+", url)
+            if not match:
+                print(markup("Invalid URL.", "red"))
+                return await configure(conf, channel=channel, group=group, fm_integration=fm_integration)
             chat_id = "-100" + match.group("chat_id")
 
         authorized = False
@@ -468,10 +474,11 @@ async def configure(conf, channel=False, group=False, fm_integration=False):
         text = f"🎊 Congratulations {user}! 🎊\ntelegram-send is now ready for use!"
         print(markup(text, "green"))
 
-        kwargs = {
-            "reply_to_message_id": root_topic_message.message_id if isinstance(root_topic_message, telegram.Message) else None
-        }
-        await bot.send_message(chat_id=chat_id, text=text, **kwargs)
+        await bot.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_to_message_id=root_topic_message.message_id if isinstance(root_topic_message, telegram.Message) else None
+        )
 
     config = configparser.ConfigParser()
 
@@ -549,8 +556,8 @@ class ConfigError(Exception):
 
 class Settings(NamedTuple):
     token: str
-    chat_id: Union[int, str]
-    reply_to_message_id: Union[int, str, None]
+    chat_id: int | str
+    reply_to_message_id: int | str | None
 
 
 def get_config_settings(conf=None) -> Settings:
@@ -558,16 +565,19 @@ def get_config_settings(conf=None) -> Settings:
     config = configparser.ConfigParser()
     if not config.read(conf) or not config.has_section("telegram"):
         raise ConfigError("Config not found")
+
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
         raise ConfigError(f"Missing options in config: {', '.join(missing_options)}")
+
     token = config.get("telegram", "token")
-    chat_id = config.get("telegram", "chat_id")
-    reply_to_message_id = config.get("telegram", "reply_to_message_id", fallback=None)
-    if chat_id.isdigit():
-        chat_id = int(chat_id)
-    if reply_to_message_id is not None and reply_to_message_id.isdigit():
-        reply_to_message_id = int(reply_to_message_id)
+    config_chat_id = config.get("telegram", "chat_id")
+    config_reply_to_message_id = config.get("telegram", "reply_to_message_id", fallback=None)
+
+    if config_chat_id.isdigit():
+        chat_id = int(config_chat_id)
+    if config_reply_to_message_id is not None and config_reply_to_message_id.isdigit():
+        reply_to_message_id = int(config_reply_to_message_id)
     return Settings(token=token, chat_id=chat_id, reply_to_message_id=reply_to_message_id)
 
 
