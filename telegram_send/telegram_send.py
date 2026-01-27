@@ -155,10 +155,7 @@ async def run():
             print(f"message_ids {' '.join(smessage_ids)}")
     except ConfigError as e:
         print(markup(str(e), "red"))
-        cmd = "telegram-send --configure"
-        if args.global_config:
-            cmd = "sudo " + cmd + " --global-config"
-        print(f"Please run: {markup(cmd, 'bold')}")
+        print(f"Please read the docs and configure correctly.")
         sys.exit(1)
     except telegram.error.NetworkError as e:
         if "timed out" in str(e).lower():
@@ -359,9 +356,9 @@ async def configure(conf=None, channel=False, group=False, fm_integration=False)
 
     - conf (str): Path where to save the configuration file. May contain `~` for
                   user's home.
-    - channel (Optional[bool]): Configure a channel.
-    - group (Optional[bool]): Configure a group.
-    - fm_integration (Optional[bool]): Setup file manager integration.
+    - channel (bool, optional): Configure a channel.
+    - group (bool, optional): Configure a group.
+    - fm_integration (bool, optional): Setup file manager integration.
     """
     conf = expanduser(conf) if conf else get_config_path()
     prompt = "❯ "
@@ -564,7 +561,7 @@ def get_config_settings(conf=None) -> Settings:
     conf = expanduser(conf) if conf else get_config_path()
     config = configparser.ConfigParser()
     if not config.read(conf) or not config.has_section("telegram"):
-        raise ConfigError("Config not found")
+        raise ConfigError(f"Config not found: {conf}")
 
     missing_options = set(["token", "chat_id"]) - set(config.options("telegram"))
     if len(missing_options) > 0:
