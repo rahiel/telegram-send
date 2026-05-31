@@ -49,6 +49,12 @@ except ImportError:
 
 global_config = "/etc/telegram-send.conf"
 
+def open_file_or_none(path):
+    try:
+        return open(path, "rb")
+    except OSError:
+        return None
+
 
 def main():
     asyncio.run(run())
@@ -69,13 +75,13 @@ async def run():
     parser.add_argument("-c", "--configure", help="configure %(prog)s", action="store_true")
     parser.add_argument("--configure-channel", help="configure %(prog)s for a channel", action="store_true")
     parser.add_argument("--configure-group", help="configure %(prog)s for a group", action="store_true")
-    parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=argparse.FileType("rb"))
+    parser.add_argument("-f", "--file", help="send file(s)", nargs="+", type=open_file_or_none)
+    parser.add_argument("-i", "--image", help="send image(s)", nargs="+", type=open_file_or_none)
+    parser.add_argument("-s", "--sticker", help="send stickers(s)", nargs="+", type=open_file_or_none)
     parser.add_argument("--animation", help="send animation(s) (GIF or soundless H.264/MPEG-4 AVC video)",
-                        nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("--video", help="send video(s)", nargs="+", type=argparse.FileType("rb"))
-    parser.add_argument("--audio", help="send audio(s)", nargs="+", type=argparse.FileType("rb"))
+                        nargs="+", type=open_file_or_none)
+    parser.add_argument("--video", help="send video(s)", nargs="+", type=open_file_or_none)
+    parser.add_argument("--audio", help="send audio(s)", nargs="+", type=open_file_or_none)
     parser.add_argument("-l", "--location",
                         help="send location(s) via latitude and longitude (separated by whitespace or a comma)",
                         nargs="+")
@@ -94,7 +100,11 @@ async def run():
                         type=float, default=30., action="store")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     args = parser.parse_args()
-
+    for attr in ("file", "image", "sticker", "animation", "video", "audio"):
+        value = getattr(args, attr)
+        if value:
+           setattr(args, attr, [f for f in value if f is not None])
+    
     conf : list[str | None]
 
     if args.global_config:
