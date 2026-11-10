@@ -310,15 +310,20 @@ async def send(*,
 
     if locations:
         it = iter(locations)
-        for loc in it:
-            if "," in loc:
-                lat, lon = loc.split(",")
-            else:
-                lat = loc
-                lon = next(it)
-            message_ids += [await bot.send_location(latitude=float(lat),
-                                                    longitude=float(lon),
-                                                    **kwargs)]
+        try:
+            for loc in it:
+                if "," in loc:
+                    lat, lon = loc.split(",")
+                else:
+                    lat = loc
+                    lon = next(it)
+                message_ids += [await bot.send_location(latitude=float(lat),
+                                                        longitude=float(lon),
+                                                        **kwargs)]
+        except StopIteration:
+            raise ConfigError("Each --location needs both a latitude and a longitude")
+        except ValueError:
+            raise ConfigError("Invalid --location value: {!r}".format(loc))
 
     return message_ids
 
